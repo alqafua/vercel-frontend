@@ -128,7 +128,44 @@ function send(type,data){if(ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringi
 function sendSettings(patch){Object.assign(C.settings,patch);send('updateSettings',C.settings);}
 function updateCards(){const st=getStats();const sv=document.querySelectorAll(".sval");if(sv.length>=5){sv[0].textContent=st.ob;sv[1].textContent=st.os;sv[2].textContent=st.conf;sv[3].textContent=st.trail;sv[4].textContent=st.total;}}
 function schedRender(){if(!rPend){rPend=true;requestAnimationFrame(()=>{rPend=false;render();})}}
-function handleServerMsg(msg){switch(msg.type){case 'init':case 'state':Object.assign(C,msg.data);if(msg.data.settings)C.settings={...C.settings,...msg.data.settings};break;case 'alert':C.alerts=[msg.data,...C.alerts].slice(0,200);C.toast=msg.data;clearTimeout(toastRef);toastRef=setTimeout(()=>{C.toast=null;render();},6000);if(C.settings.soundEnabled)playSound(msg.data.color==='confirmed'?'conf':msg.data.color==='purple'?'trail':'n');break;case 'priceUpdates':Object.entries(msg.data).forEach(([sym,d])=>{if(C.symbolData[sym]){C.symbolData[sym].rsi=d.rsi;C.symbolData[sym].zone=d.zone;}});updateCards();return;case 'scanning':C.scanning=msg.data;break;case 'progress':C.progress=msg.data;break;case 'settings':C.settings={...C.settings,...msg.data};break;case 'alerts':C.alerts=msg.data;break;case 'trades':C.openTrades=msg.data;break;case 'closedTrades':C.closedTrades=msg.data;break;case 'accounts':C.accounts=msg.data;break;case 'copyOn':C.copyOn=msg.data;break;case 'copyLog':C.copyLog=[msg.data,...C.copyLog].slice(0,300);break;case 'addAccountResult':if(msg.data.success){showForm=false;formAccId=null;fd={name:'',apiKey:'',apiSecret:'',sizeRatio:'5',tag:'personal',isMaster:false};showNotif('✅ تم إضافة الحساب — $'+(msg.data.balance?.toFixed(2)||'—'));}else alert('❌ فشل: '+msg.data.error);break;case 'testAccountResult':if(msg.data.success)alert('✅ الاتصال ناجح — $'+(msg.data.balance?.toFixed(2)||'—'));else alert('❌ فشل: '+msg.data.error);break;case 'executeResult':{const ok2=(msg.data||[]).filter(r=>r.ok).length;showNotif(ok2>0?'✅ تم التنفيذ في '+ok2+' حساب':'❌ فشل التنفيذ');break;}}render();}
+function handleServerMsg(msg){
+  let needRender=false;
+  switch(msg.type){
+    case 'init':case 'state':
+      Object.assign(C,msg.data);
+      if(msg.data.settings)C.settings={...C.settings,...msg.data.settings};
+      needRender=true;break;
+    case 'alert':
+      C.alerts=[msg.data,...C.alerts].slice(0,200);
+      C.toast=msg.data;clearTimeout(toastRef);
+      toastRef=setTimeout(()=>{C.toast=null;updateToast();},6000);
+      if(C.settings.soundEnabled)playSound(msg.data.color==='confirmed'?'conf':msg.data.color==='purple'?'trail':'n');
+      updateAlertBadge();showToast(msg.data);return;
+    case 'priceUpdates':
+      Object.entries(msg.data).forEach(([sym,d])=>{if(C.symbolData[sym]){C.symbolData[sym].rsi=d.rsi;C.symbolData[sym].zone=d.zone;}});
+      updateCards();return;
+    case 'scanning':C.scanning=msg.data;break;
+    case 'progress':C.progress=msg.data;break;
+    case 'settings':C.settings={...C.settings,...msg.data};break;
+    case 'alerts':C.alerts=msg.data;needRender=true;break;
+    case 'trades':C.openTrades=msg.data;needRender=true;break;
+    case 'closedTrades':C.closedTrades=msg.data;break;
+    case 'accounts':C.accounts=msg.data;if(C.page==='subscribers')needRender=true;break;
+    case 'copyOn':C.copyOn=msg.data;needRender=true;break;
+    case 'copyLog':C.copyLog=[msg.data,...C.copyLog].slice(0,300);break;
+    case 'addAccountResult':
+      if(msg.data.success){showForm=false;formAccId=null;fd={name:'',apiKey:'',apiSecret:'',sizeRatio:'5',tag:'personal',isMaster:false};showNotif('✅ تم إضافة الحساب — $'+(msg.data.balance?.toFixed(2)||'—'));needRender=true;}
+      else alert('❌ فشل: '+msg.data.error);break;
+    case 'testAccountResult':
+      if(msg.data.success)alert('✅ الاتصال ناجح — $'+(msg.data.balance?.toFixed(2)||'—'));
+      else alert('❌ فشل: '+msg.data.error);break;
+    case 'executeResult':{const ok2=(msg.data||[]).filter(r=>r.ok).length;showNotif(ok2>0?'✅ تم التنفيذ في '+ok2+' حساب':'❌ فشل التنفيذ');break;}
+  }
+  if(needRender)schedRender();
+}
+function updateToast(){const t=document.querySelector('.toast');if(t)t.remove();}
+function showToast(a){const old=document.querySelector('.toast');if(old)old.remove();const t=document.createElement('div');t.className='toast '+a.color;t.onclick=()=>t.remove();t.innerHTML='<div style="display:flex;justify-content:space-between"><span style="font-weight:700;font-size:15px">'+a.symbol+'</span><span>'+a.emoji+'</span></div><div style="font-size:13px;font-weight:600;margin-top:4px">'+a.label+'</div><div style="font-size:12px;color:var(--text2);margin-top:2px">القيمة: '+a.rsi+'</div>';document.body.appendChild(t);setTimeout(()=>t.remove(),6000);}
+function updateAlertBadge(){const b=document.querySelector('.ntab .nbadge');if(b)b.textContent=C.alerts.length;const dw=document.querySelector('.dhdr');if(!dw)return;}
 function showNotif(msg){const old=document.querySelector('.save-notif');if(old)old.remove();const n=document.createElement('div');n.className='save-notif';n.textContent=msg;document.body.appendChild(n);setTimeout(()=>n.remove(),2800);}
 async function doLogin(u,p){try{const r=await fetch(getApiUrl('/api/login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});const d=await r.json();if(d.token){C.token=d.token;localStorage.setItem('rsi_token',d.token);C.loggedIn=true;connectWS();render();return true;}return false;}catch(e){return false;}}
 function fp(n){if(!n&&n!==0)return null;if(n>=100)return n.toFixed(2);if(n>=1)return n.toFixed(3);if(n>=0.1)return n.toFixed(4);return n.toFixed(6);}
