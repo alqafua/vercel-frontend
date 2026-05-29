@@ -568,9 +568,182 @@ function rNav(){
 }
 
 // ═══════════════════════════════════════════════
-//  RENDER — SETTINGS PANEL
+//  RENDER — SETTINGS PANEL (منظم كتبويبات)
 // ═══════════════════════════════════════════════
+let settingsTab = 'cornix'; // 'cornix' | 'telegram' | 'trailing' | 'liquidity'
+
 function rSettings(){
+  const p=el('div',{style:{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'14px',margin:'10px 14px',padding:'14px'}});
+
+  // تبويبات الإعدادات
+  const tabs=el('div',{style:{display:'flex',gap:'6px',marginBottom:'14px',flexWrap:'wrap'}});
+  [['cornix','⚙️ Cornix'],['telegram','📤 تلغرام'],['trailing','🟣 Trailing RSI'],['liquidity','💧 السيولة']].forEach(([k,lb])=>{
+    tabs.appendChild(el('button',{
+      style:{padding:'6px 14px',borderRadius:'8px',border:'1px solid',cursor:'pointer',fontSize:'12px',fontWeight:'700',
+        background:settingsTab===k?'rgba(0,229,255,.15)':'var(--bg3)',
+        borderColor:settingsTab===k?'var(--accent)':'var(--border)',
+        color:settingsTab===k?'var(--accent)':'var(--text2)'},
+      onClick:()=>{settingsTab=k;render();}
+    },lb));
+  });
+  p.appendChild(tabs);
+
+  const mkG=()=>el('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'10px'}});
+  const mkF=(l,inp)=>{const f=el('div',{style:{display:'flex',flexDirection:'column',gap:'5px'}});f.appendChild(el('label',{style:{fontSize:'11px',color:'var(--text2)',fontWeight:'600'}},l));f.appendChild(inp);return f;};
+  const mkI=(type,val,cb,ex={})=>{const i=el('input',{type,value:String(val||''),...ex,style:{background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--text)',borderRadius:'8px',padding:'8px 10px',fontSize:'12px',outline:'none',width:'100%',transition:'border-color .2s'}});i.onfocus=()=>i.style.borderColor='var(--accent)';i.onblur=()=>i.style.borderColor='var(--border)';i.onchange=()=>cb(i.value);return i;};
+  const mkS=(opts,val,cb)=>{const s=el('select',{style:{background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--text)',borderRadius:'8px',padding:'8px 10px',fontSize:'12px',outline:'none',width:'100%'}});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(v===val)o.setAttribute('selected','');s.appendChild(o);});s.onchange=()=>{cb(s.value);sendSettings({});render();};return s;};
+  const mkC=(label,key)=>{
+    const row=el('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',background:'var(--bg3)',borderRadius:'8px',cursor:'pointer'}});
+    const chk=el('input',{type:'checkbox',checked:C.settings[key]||false,style:{accentColor:'var(--accent)',width:'16px',height:'16px',cursor:'pointer',flexShrink:'0'}});
+    chk.onchange=()=>{C.settings[key]=chk.checked;sendSettings({});render();};
+    row.appendChild(chk);
+    row.appendChild(el('span',{style:{fontSize:'12px',color:'var(--text2)',userSelect:'none'}},label));
+    row.addEventListener('click',(e)=>{if(e.target!==chk){chk.checked=!chk.checked;C.settings[key]=chk.checked;sendSettings({});render();}});
+    return row;
+  };
+  const sec=(title)=>el('div',{style:{fontSize:'11px',fontWeight:'800',color:'var(--text2)',marginTop:'14px',marginBottom:'8px',textTransform:'uppercase',letterSpacing:'1px'}},title);
+
+  // ══ تبويب Cornix ══
+  if(settingsTab==='cornix'){
+    // الأساسيات
+    p.appendChild(sec('الأساسيات'));
+    const g1=mkG();
+    g1.appendChild(mkF('الهامش',mkS([['Isolated','Isolated'],['Cross','Cross']],C.settings.cxMargin,v=>C.settings.cxMargin=v)));
+    g1.appendChild(mkF('الرافعة',mkI('number',C.settings.cxLev,v=>C.settings.cxLev=v,{min:'1',max:'125'})));
+    g1.appendChild(mkF('حجم الدخول',mkI('text',C.settings.cxAmt,v=>C.settings.cxAmt=v)));
+    p.appendChild(g1);
+
+    // وقف الخسارة
+    p.appendChild(sec('وقف الخسارة (SL)'));
+    p.appendChild(mkC('تفعيل وقف الخسارة','cxSLon'));
+    if(C.settings.cxSLon){
+      const gsl=mkG();
+      gsl.appendChild(mkF('نسبة SL %',mkI('number',C.settings.cxSL,v=>C.settings.cxSL=v,{step:'0.1',min:'0.1',placeholder:'مثال: 2'})));
+      p.appendChild(gsl);
+    }
+
+    // الأهداف
+    p.appendChild(sec('الأهداف (Take Profit)'));
+    p.appendChild(mkC('تفعيل هدفين (TP1 + TP2)','cxTP2on'));
+    if(!C.settings.cxTP2on){
+      const gtp=mkG();
+      gtp.appendChild(mkF('TP نسبة %',mkI('number',C.settings.cxTP1,v=>C.settings.cxTP1=v,{step:'0.1',min:'0.1'})));
+      p.appendChild(gtp);
+    } else {
+      const gtp2=mkG();
+      gtp2.appendChild(mkF('TP1 نسبة %',mkI('number',C.settings.cxTP1,v=>C.settings.cxTP1=v,{step:'0.1'})));
+      gtp2.appendChild(mkF('TP1 كمية %',mkI('number',C.settings.cxTP1Amt,v=>C.settings.cxTP1Amt=v,{step:'1',min:'1',max:'100'})));
+      gtp2.appendChild(mkF('TP2 نسبة %',mkI('number',C.settings.cxTP2,v=>C.settings.cxTP2=v,{step:'0.1'})));
+      gtp2.appendChild(mkF('TP2 كمية %',mkI('number',C.settings.cxTP2Amt,v=>C.settings.cxTP2Amt=v,{step:'1',min:'1',max:'100'})));
+      p.appendChild(gtp2);
+    }
+
+    // الدخولات
+    p.appendChild(sec('الدخولات المتعددة'));
+    p.appendChild(mkC('تفعيل الدخول الثاني','cxEntry2on'));
+    if(C.settings.cxEntry2on){
+      const ge2=mkG();
+      ge2.appendChild(mkF('مسافة الدخول الثاني %',mkI('number',C.settings.cxEntry2Dist||'2',v=>C.settings.cxEntry2Dist=v,{step:'0.1',min:'0.1'})));
+      ge2.appendChild(mkF('كمية الدخول الثاني %',mkI('number',C.settings.cxEntry2Amt||'50',v=>C.settings.cxEntry2Amt=v,{step:'1',min:'1',max:'100'})));
+      p.appendChild(ge2);
+      p.appendChild(mkC('تفعيل الدخول الثالث','cxEntry3on'));
+      if(C.settings.cxEntry3on){
+        const ge3=mkG();
+        ge3.appendChild(mkF('مسافة الدخول الثالث %',mkI('number',C.settings.cxEntry3Dist||'4',v=>C.settings.cxEntry3Dist=v,{step:'0.1',min:'0.1'})));
+        ge3.appendChild(mkF('كمية الدخول الثالث %',mkI('number',C.settings.cxEntry3Amt||'50',v=>C.settings.cxEntry3Amt=v,{step:'1',min:'1',max:'100'})));
+        p.appendChild(ge3);
+      }
+    }
+
+    // Trailing
+    p.appendChild(sec('Trailing & Break Even'));
+    const gtr=mkG();
+    gtr.appendChild(mkF('Trailing TP',mkS([['on','✅ تفعيل'],['off','❌ إلغاء']],C.settings.cxTrailTp,v=>C.settings.cxTrailTp=v)));
+    gtr.appendChild(mkF('Trailing TP %',mkI('number',C.settings.cxTrailPct,v=>C.settings.cxTrailPct=v,{step:'0.1'})));
+    gtr.appendChild(mkF('Entry Trailing',mkI('text',C.settings.cxEntryTrail,v=>C.settings.cxEntryTrail=v)));
+    p.appendChild(gtr);
+    p.appendChild(mkC('تفعيل Break Even بعد TP1','cxBEon'));
+  }
+
+  // ══ تبويب تلغرام ══
+  if(settingsTab==='telegram'){
+    p.appendChild(sec('بيانات البوت'));
+    const gt=mkG();
+    gt.appendChild(mkF('توكن البوت',mkI('text',C.settings.cxToken,v=>C.settings.cxToken=v,{placeholder:'123456789:AAF...'})));
+    p.appendChild(gt);
+    p.appendChild(sec('قنوات الإرسال'));
+    const gc=mkG();
+    gc.appendChild(mkF('Chat ID — الإشارات',mkI('text',C.settings.cxChat,v=>C.settings.cxChat=v,{placeholder:'-100xxxxxxxxx'})));
+    gc.appendChild(mkF('Chat ID — نتائج الإغلاق',mkI('text',C.settings.cxChatClose||'',v=>C.settings.cxChatClose=v,{placeholder:'اختياري'})));
+    p.appendChild(gc);
+    p.appendChild(el('div',{style:{marginTop:'10px',padding:'10px 12px',background:'rgba(0,229,255,.06)',border:'1px solid rgba(0,229,255,.2)',borderRadius:'8px',fontSize:'11px',color:'var(--accent)',lineHeight:'1.7'}},
+      '💡 Chat ID الإشارات: تصلك رسالة Cornix عند كل إشارة\nChat ID النتائج: تصلك نتيجة الصفقة عند الإغلاق (ربح/خسارة)'));
+  }
+
+  // ══ تبويب Trailing RSI ══
+  if(settingsTab==='trailing'){
+    // SHORT
+    const sc=el('div',{style:{background:'rgba(255,71,87,.04)',border:'1px solid rgba(255,71,87,.25)',borderRadius:'12px',padding:'14px',marginBottom:'10px'}});
+    const sh=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px'}});
+    sh.appendChild(el('div',{style:{fontSize:'13px',fontWeight:'800',color:'var(--red)'}},'🔴 SHORT — انعكاس من فوق'));
+    const schk=el('input',{type:'checkbox',checked:C.settings.trSon||false,style:{accentColor:'var(--red)',width:'18px',height:'18px',cursor:'pointer'}});
+    schk.onchange=()=>{C.settings.trSon=schk.checked;sendSettings({});render();};
+    sh.appendChild(schk);sc.appendChild(sh);
+    if(C.settings.trSon){
+      const sg=mkG();
+      sg.appendChild(mkF('ابدأ التتبع عند RSI ≥',mkI('number',C.settings.trSstart||75,v=>C.settings.trSstart=parseFloat(v),{step:'0.5',min:'50',max:'100'})));
+      sg.appendChild(mkF('فارق الانعكاس (نقطة)',mkI('number',C.settings.trSgap||3,v=>C.settings.trSgap=parseFloat(v),{step:'0.5',min:'0.5'})));
+      sc.appendChild(sg);
+      sc.appendChild(el('div',{style:{marginTop:'8px',padding:'8px',background:'rgba(0,0,0,.2)',borderRadius:'6px',fontSize:'11px',color:'var(--text2)'}},
+        `📌 مثال: RSI يوصل ${C.settings.trSstart||75} ثم يرجع ${C.settings.trSgap||3} نقطة → إشارة بيع`));
+    }
+    p.appendChild(sc);
+    // LONG
+    const lc=el('div',{style:{background:'rgba(46,213,115,.04)',border:'1px solid rgba(46,213,115,.25)',borderRadius:'12px',padding:'14px'}});
+    const lh=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px'}});
+    lh.appendChild(el('div',{style:{fontSize:'13px',fontWeight:'800',color:'var(--green)'}},'🟢 LONG — انعكاس من تحت'));
+    const lchk=el('input',{type:'checkbox',checked:C.settings.trLon||false,style:{accentColor:'var(--green)',width:'18px',height:'18px',cursor:'pointer'}});
+    lchk.onchange=()=>{C.settings.trLon=lchk.checked;sendSettings({});render();};
+    lh.appendChild(lchk);lc.appendChild(lh);
+    if(C.settings.trLon){
+      const lg2=mkG();
+      lg2.appendChild(mkF('ابدأ التتبع عند RSI ≤',mkI('number',C.settings.trLstart||25,v=>C.settings.trLstart=parseFloat(v),{step:'0.5',min:'0',max:'50'})));
+      lg2.appendChild(mkF('فارق الانعكاس (نقطة)',mkI('number',C.settings.trLgap||3,v=>C.settings.trLgap=parseFloat(v),{step:'0.5',min:'0.5'})));
+      lc.appendChild(lg2);
+      lc.appendChild(el('div',{style:{marginTop:'8px',padding:'8px',background:'rgba(0,0,0,.2)',borderRadius:'6px',fontSize:'11px',color:'var(--text2)'}},
+        `📌 مثال: RSI ينزل ${C.settings.trLstart||25} ثم يرتفع ${C.settings.trLgap||3} نقطة → إشارة شراء`));
+    }
+    p.appendChild(lc);
+  }
+
+  // ══ تبويب السيولة ══
+  if(settingsTab==='liquidity'){
+    p.appendChild(sec('فلتر حجم التداول 24h'));
+    p.appendChild(mkC('تفعيل فلتر الحجم','liqVon'));
+    if(C.settings.liqVon){
+      const gv=mkG();
+      gv.appendChild(mkF('الحد الأدنى للحجم ($)',mkI('number',C.settings.liqVmin||50000000,v=>C.settings.liqVmin=parseFloat(v),{step:'1000000'})));
+      p.appendChild(gv);
+      p.appendChild(el('div',{style:{fontSize:'11px',color:'var(--green)',marginTop:'4px'}},`= ${fU(C.settings.liqVmin||0)}$`));
+    }
+    p.appendChild(sec('فلتر Open Interest'));
+    p.appendChild(mkC('تفعيل فلتر OI','liqOon'));
+    if(C.settings.liqOon){
+      const go=mkG();
+      go.appendChild(mkF('الحد الأدنى للـ OI ($)',mkI('number',C.settings.liqOmin||10000000,v=>C.settings.liqOmin=parseFloat(v),{step:'1000000'})));
+      p.appendChild(go);
+      p.appendChild(el('div',{style:{fontSize:'11px',color:'var(--orange)',marginTop:'4px'}},`= ${fU(C.settings.liqOmin||0)}$`));
+    }
+  }
+
+  // زر الحفظ
+  p.appendChild(el('button',{
+    style:{marginTop:'16px',width:'100%',padding:'11px',background:'linear-gradient(135deg,rgba(0,229,255,.15),rgba(0,119,255,.1))',border:'1px solid var(--accent)',color:'var(--accent)',borderRadius:'10px',fontSize:'13px',fontWeight:'800',cursor:'pointer'},
+    onClick:()=>{sendSettings(C.settings);const btn=event.target;btn.textContent='✅ تم الحفظ';setTimeout(()=>btn.textContent='💾 حفظ الإعدادات',2000);}
+  },'💾 حفظ الإعدادات'));
+
+  return p;
+}
   const p=el('div',{style:{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'14px',margin:'10px 14px',padding:'14px'}});
   const mkT=(t)=>el('div',{style:{fontSize:'12px',fontWeight:'700',color:'var(--accent)',margin:'12px 0 8px',paddingBottom:'4px',borderBottom:'1px solid rgba(0,229,255,.15)'}},t);
   const mkG=()=>el('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'8px'}});
@@ -644,21 +817,6 @@ function rSettings(){
   // ─── فلتر السيولة ───
   p.appendChild(mkT('💧 فلتر السيولة'));
   const lqg=mkG();
-  const vf=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});vf.appendChild(el('label',{style:{fontSize:'10px',color:'var(--text2)'}},'حد أدنى حجم 24h ($)'));
-  const vr=el('div',{style:{display:'flex',gap:'8px',alignItems:'center'}});vr.appendChild(mkC(C.settings.liqVon,v=>C.settings.liqVon=v));vr.appendChild(mkI('number',C.settings.liqVmin,v=>C.settings.liqVmin=parseFloat(v),{step:'1000000'}));vf.appendChild(vr);lqg.appendChild(vf);
-  const of2=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});of2.appendChild(el('label',{style:{fontSize:'10px',color:'var(--text2)'}},'حد أدنى OI ($)'));
-  const or2=el('div',{style:{display:'flex',gap:'8px',alignItems:'center'}});or2.appendChild(mkC(C.settings.liqOon,v=>C.settings.liqOon=v));or2.appendChild(mkI('number',C.settings.liqOmin,v=>C.settings.liqOmin=parseFloat(v),{step:'1000000'}));of2.appendChild(or2);lqg.appendChild(of2);
-  p.appendChild(lqg);
-
-  // ─── زر حفظ ───
-  p.appendChild(el('button',{
-    style:{marginTop:'12px',width:'100%',padding:'10px',background:'rgba(0,229,255,.12)',border:'1px solid var(--accent)',color:'var(--accent)',borderRadius:'10px',fontSize:'13px',fontWeight:'700',cursor:'pointer'},
-    onClick:()=>{sendSettings(C.settings);alert('✅ تم حفظ الإعدادات');}
-  },'💾 حفظ الإعدادات'));
-
-  return p;
-}
-
 function rDashHdr(st){
   const hdr=el('div',{className:'dash-hdr'});
   const r1=el('div',{className:'dr'});
