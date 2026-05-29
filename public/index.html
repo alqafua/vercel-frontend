@@ -275,6 +275,9 @@ const C = {
     cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',
     cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',
     cxToken:'',cxChat:'',cxChatClose:'',
+    cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',
+    cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',
+    cxBEon:false,
     trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,
     liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,
     revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',soundEnabled:true,
@@ -585,8 +588,8 @@ function rSettings(){
   // SL
   const slf=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});slf.appendChild(el('label',{style:{fontSize:'10px',color:'var(--text2)'}},'وقف الخسارة (SL)'));
   const slr=el('div',{style:{display:'flex',gap:'8px',alignItems:'center'}});
-  slr.appendChild(mkS([['on','🟢 تفعيل'],['off','🔴 إلغاء']],C.settings.cxSLon?'on':'off',v=>C.settings.cxSLon=v==='on'));
-  if(C.settings.cxSLon)slr.appendChild(mkI('number',C.settings.cxSL,v=>C.settings.cxSL=v,{step:'0.1',style:'width:80px'}));
+  slr.appendChild(mkS([['on','🟢 تفعيل'],['off','🔴 إلغاء']],C.settings.cxSLon?'on':'off',v=>{C.settings.cxSLon=v==='on';sendSettings({});render();}));
+  if(C.settings.cxSLon)slr.appendChild(mkI('number',C.settings.cxSL,v=>C.settings.cxSL=v,{step:'0.1',min:'0.1',placeholder:'%'}));
   slf.appendChild(slr);cg.appendChild(slf);
   // TP
   const tp2f=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});
@@ -602,6 +605,13 @@ function rSettings(){
   if(C.settings.cxEntry2on){
     cg.appendChild(mkF('مسافة الدخول الثاني %',mkI('number',C.settings.cxEntry2Dist||'2',v=>C.settings.cxEntry2Dist=v,{step:'0.1',min:'0.1'})));
     cg.appendChild(mkF('كمية الدخول الثاني %',mkI('number',C.settings.cxEntry2Amt||'50',v=>C.settings.cxEntry2Amt=v,{step:'1',min:'1',max:'100'})));
+    // الدخول الثالث
+    const e3f=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});
+    const e3l=el('div',{style:{display:'flex',alignItems:'center',gap:'6px'}});e3l.appendChild(el('label',{style:{fontSize:'10px',color:'var(--text2)'}},'الدخول الثالث'));e3l.appendChild(mkC(C.settings.cxEntry3on||false,v=>{C.settings.cxEntry3on=v;sendSettings({});render();}));e3f.appendChild(e3l);cg.appendChild(e3f);
+    if(C.settings.cxEntry3on){
+      cg.appendChild(mkF('مسافة الدخول الثالث %',mkI('number',C.settings.cxEntry3Dist||'4',v=>C.settings.cxEntry3Dist=v,{step:'0.1',min:'0.1'})));
+      cg.appendChild(mkF('كمية الدخول الثالث %',mkI('number',C.settings.cxEntry3Amt||'50',v=>C.settings.cxEntry3Amt=v,{step:'1',min:'1',max:'100'})));
+    }
   }
   // ─── Break Even ───
   const bef=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});
