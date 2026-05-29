@@ -142,10 +142,15 @@ function schedRender(){if(!rPend){rPend=true;requestAnimationFrame(()=>{rPend=fa
 function handleServerMsg(msg){
   let needRender=false;
   switch(msg.type){
-    case 'init':case 'state':
+    case 'init':
       Object.assign(C,msg.data);
       if(msg.data.settings)C.settings={...C.settings,...msg.data.settings};
       needRender=true;break;
+    case 'state':
+      Object.assign(C,msg.data);
+      if(msg.data.settings)C.settings={...C.settings,...msg.data.settings};
+      // لا render - فقط تحديث البيانات
+      break;
     case 'alert':
       C.alerts=[msg.data,...C.alerts].slice(0,200);
       C.toast=msg.data;clearTimeout(toastRef);
@@ -156,12 +161,16 @@ function handleServerMsg(msg){
       Object.entries(msg.data).forEach(([sym,d])=>{if(C.symbolData[sym]){C.symbolData[sym].rsi=d.rsi;C.symbolData[sym].zone=d.zone;}});
       updateCards();return;
     case 'scanning':C.scanning=msg.data;break;
+    case 'symbolData':
+      Object.assign(C.symbolData, msg.data);
+      updateGridOnly();
+      return;
     case 'progress':C.progress=msg.data;break;
     case 'settings':C.settings={...C.settings,...msg.data};break;
     case 'alerts':C.alerts=msg.data;needRender=true;break;
     case 'trades':C.openTrades=msg.data;needRender=true;break;
     case 'closedTrades':C.closedTrades=msg.data;break;
-    case 'accounts':C.accounts=msg.data;if(C.page==='subscribers')needRender=true;break;
+    case 'accounts':C.accounts=msg.data;break;
     case 'copyOn':C.copyOn=msg.data;needRender=true;break;
     case 'copyLog':C.copyLog=[msg.data,...C.copyLog].slice(0,300);break;
     case 'addAccountResult':
