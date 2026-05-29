@@ -596,6 +596,16 @@ function rSettings(){
   cg.appendChild(mkF('Trailing TP',mkS([['on','تفعيل'],['off','إلغاء']],C.settings.cxTrailTp,v=>C.settings.cxTrailTp=v)));
   cg.appendChild(mkF('Trailing %',mkI('number',C.settings.cxTrailPct,v=>C.settings.cxTrailPct=v,{step:'0.1'})));
   cg.appendChild(mkF('Entry Trail',mkI('text',C.settings.cxEntryTrail,v=>C.settings.cxEntryTrail=v)));
+  // ─── الدخول الثاني ───
+  const e2f=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});
+  const e2l=el('div',{style:{display:'flex',alignItems:'center',gap:'6px'}});e2l.appendChild(el('label',{style:{fontSize:'10px',color:'var(--text2)'}},'الدخول الثاني'));e2l.appendChild(mkC(C.settings.cxEntry2on||false,v=>{C.settings.cxEntry2on=v;sendSettings({});render();}));e2f.appendChild(e2l);cg.appendChild(e2f);
+  if(C.settings.cxEntry2on){
+    cg.appendChild(mkF('مسافة الدخول الثاني %',mkI('number',C.settings.cxEntry2Dist||'2',v=>C.settings.cxEntry2Dist=v,{step:'0.1',min:'0.1'})));
+    cg.appendChild(mkF('كمية الدخول الثاني %',mkI('number',C.settings.cxEntry2Amt||'50',v=>C.settings.cxEntry2Amt=v,{step:'1',min:'1',max:'100'})));
+  }
+  // ─── Break Even ───
+  const bef=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});
+  const bel2=el('div',{style:{display:'flex',alignItems:'center',gap:'6px'}});bel2.appendChild(el('label',{style:{fontSize:'10px',color:'var(--text2)'}},'Break Even بعد TP1'));bel2.appendChild(mkC(C.settings.cxBEon||false,v=>{C.settings.cxBEon=v;sendSettings({});}));bef.appendChild(bel2);cg.appendChild(bef);
   p.appendChild(cg);
 
   // ─── تلغرام ───
@@ -878,6 +888,56 @@ function rSubPage(){
   csw.appendChild(txt);page.appendChild(csw);
 
   if(C.copyOn){const em=el('button',{className:'em-btn',onClick:()=>{if(confirm('🚨 إغلاق كل الصفقات؟'))send('emergencyStop');}});em.innerHTML='🚨 إيقاف طارئ — إغلاق كل الصفقات فوراً';page.appendChild(em);}
+
+  // ─── إعدادات النتائج والتلغرام ───
+  const tgSection=el('div',{style:{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'14px',padding:'14px',marginBottom:'16px'}});
+  tgSection.appendChild(el('div',{style:{fontSize:'12px',fontWeight:'700',color:'var(--accent)',marginBottom:'10px'}},'📤 إعدادات تلغرام النتائج'));
+  const tgGrid=el('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'8px'}});
+  // Chat ID النتائج
+  const cf=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});
+  cf.appendChild(el('label',{style:{fontSize:'10px',color:'var(--text2)'}},'Chat ID (نتائج الصفقات المغلقة)'));
+  const ci=el('input',{type:'text',value:C.settings.cxChatClose||'',placeholder:'أدخل Chat ID للنتائج',style:{background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--text)',borderRadius:'8px',padding:'7px 10px',fontSize:'12px',outline:'none',width:'100%'}});
+  ci.oninput=()=>C.settings.cxChatClose=ci.value;
+  cf.appendChild(ci);tgGrid.appendChild(cf);
+  // Chat ID الإشارات
+  const cf2=el('div',{style:{display:'flex',flexDirection:'column',gap:'4px'}});
+  cf2.appendChild(el('label',{style:{fontSize:'10px',color:'var(--text2)'}},'Chat ID (الإشارات)'));
+  const ci2=el('input',{type:'text',value:C.settings.cxChat||'',placeholder:'Chat ID الإشارات',style:{background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--text)',borderRadius:'8px',padding:'7px 10px',fontSize:'12px',outline:'none',width:'100%'}});
+  ci2.oninput=()=>C.settings.cxChat=ci2.value;
+  cf2.appendChild(ci2);tgGrid.appendChild(cf2);
+  tgSection.appendChild(tgGrid);
+  tgSection.appendChild(el('button',{
+    style:{marginTop:'10px',padding:'8px 16px',background:'rgba(0,229,255,.12)',border:'1px solid var(--accent)',color:'var(--accent)',borderRadius:'8px',fontSize:'12px',fontWeight:'700',cursor:'pointer'},
+    onClick:()=>sendSettings(C.settings)
+  },'💾 حفظ'));
+  page.appendChild(tgSection);
+
+  // ─── إحصائيات المشتركين ───
+  if(C.accounts.length>0){
+    const statsSection=el('div',{style:{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'14px',padding:'14px',marginBottom:'16px'}});
+    statsSection.appendChild(el('div',{style:{fontSize:'12px',fontWeight:'700',color:'var(--accent)',marginBottom:'10px'}},'📊 إحصائيات المشتركين'));
+    const statsGrid=el('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:'8px'}});
+    const mkStat=(lb,v,c='var(--text)')=>{
+      const s=el('div',{style:{background:'var(--bg3)',borderRadius:'10px',padding:'10px',textAlign:'center'}});
+      s.appendChild(el('div',{style:{fontSize:'10px',color:'var(--text2)',marginBottom:'4px'}},lb));
+      s.appendChild(el('div',{style:{fontSize:'20px',fontWeight:'800',color:c}},v));
+      return s;
+    };
+    const allPos=C.accounts.reduce((a,acc)=>a.concat(acc.livePositions||[]),[]);
+    const allPnl=allPos.reduce((s,p)=>s+parseFloat(p.unRealizedProfit||0),0);
+    const allBal=C.accounts.reduce((s,a)=>s+(parseFloat(a.balance)||0),0);
+    const allTrades=C.accounts.reduce((s,a)=>s+(a.stats?.closes||0),0);
+    const allWins=C.accounts.reduce((s,a)=>s+(a.stats?.wins||0),0);
+    const allTot=C.accounts.reduce((s,a)=>s+(a.stats?.tot||0),0);
+    statsGrid.appendChild(mkStat('إجمالي الرصيد',`$${allBal.toFixed(0)}`,'var(--accent)'));
+    statsGrid.appendChild(mkStat('PnL لايف',`${allPnl>=0?'+':''}$${allPnl.toFixed(2)}`,allPnl>=0?'var(--green)':'var(--red)'));
+    statsGrid.appendChild(mkStat('صفقات مفتوحة',String(allPos.length),'var(--yellow)'));
+    statsGrid.appendChild(mkStat('إجمالي الصفقات',String(allTrades)));
+    statsGrid.appendChild(mkStat('نسبة النجاح',allTrades?`${(allWins/allTrades*100).toFixed(0)}%`:'—',allTrades&&allWins/allTrades>=.5?'var(--green)':'var(--red)'));
+    statsGrid.appendChild(mkStat('الأداء الكلي',allTrades?`${allTot>=0?'+':''}${allTot.toFixed(1)}%`:'—',allTot>=0?'var(--green)':'var(--red)'));
+    statsSection.appendChild(statsGrid);
+    page.appendChild(statsSection);
+  }
 
   // فورم الإضافة
   if(showForm)page.appendChild(rAddForm());
