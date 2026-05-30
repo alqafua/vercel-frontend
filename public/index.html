@@ -227,6 +227,44 @@ if(settingsTab==='liquidity'){
 }
 if(settingsTab==='scanner'){
   const s1=S('📡 المؤشر والفريم');const g1=G();g1.appendChild(FS('المؤشر','mode',[['RSI','📈 RSI خام'],['SMA','🔮 SMA على RSI'],['EMA','⚡ EMA على RSI']]));if(C.settings.mode!=='RSI')g1.appendChild(F('فترة MA','number','maPeriod',{min:'2',max:'50',step:'1'}));g1.appendChild(FS('الفريم الزمني','interval',[['1m','1 دقيقة'],['3m','3 دقائق'],['5m','5 دقائق'],['15m','15 دقيقة'],['30m','30 دقيقة'],['1h','ساعة'],['2h','ساعتين'],['4h','4 ساعات'],['1d','يومي']]));s1.appendChild(g1);page.appendChild(s1);
+  // ─── فلتر أنواع الإشارات للتلغرام ───
+  const sFilter=S('📤 أنواع الإشارات التي تُرسل على تلغرام');
+  const sf=C.settings.sigFilters||{ob:true,os:true,conf:true,trail:true};
+  const mkSigFilter=(label,key,desc)=>{
+    const on=sfObj[key]!==false;
+    const row=el('div',{className:'set-toggle '+(on?'on':''),style:{marginBottom:'8px'},onClick:()=>{
+      if(!C.settings.sigFilters)C.settings.sigFilters={ob:true,os:true,conf:true,trail:true};
+      C.settings.sigFilters[key]=!C.settings.sigFilters[key];
+      render();
+    }});
+    const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row2.appendChild(knob);
+    const lbl=el('div',{className:'stog-label'});
+    lbl.appendChild(el('div',{className:'stog-title'},label));
+    lbl.appendChild(el('div',{className:'stog-sub'},on?'✅ يُرسل على تلغرام':'❌ لا يُرسل'));
+    row.appendChild(lbl);return row;
+  };
+  sFilter.appendChild(mkSigF('🔴 تشبع بيع (OB ≥70)','ob','تجاوز 70 و نزل من 70'));
+  sFilter.appendChild(mkSigF('🔵 تشبع شراء (OS ≤30)','os','نزل من 30 و صعد من 30'));
+  sFilter.appendChild(mkSigF('⚡ إشارات أكيدة','conf','الإشارات المؤكدة داخل المنطقة'));
+  sFilter.appendChild(mkSigF('🟣 Trailing RSI','trail','إشارات الانعكاس التتبعية'));
+  page.appendChild(sFilter);
+
+  // فلتر أنواع الإشارات
+  const s0=S('📤 أنواع الإشارات التي تُرسل على تلغرام');
+  if(!C.settings.sigFilters)C.settings.sigFilters={ob:true,os:true,conf:true,trail:true};
+  const sfObj=C.settings.sigFilters;
+  const mkSigF=(label,key)=>{
+    const on=sf[key]!==false;
+    const row2=el('div',{className:'set-toggle '+(on?'on':''),style:{marginBottom:'8px'},onClick:()=>{sfObj[key]=!sfObj[key];render();}});
+    const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);
+    const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},label));lbl.appendChild(el('div',{className:'stog-sub'},on?'✅ يُرسل':'❌ لا يُرسل'));row2.appendChild(lbl);return row2;
+  };
+  sFilter.appendChild(mkSigF('🔴 تشبع بيع (تجاوز 70 / نزل من 70)','ob'));
+  sFilter.appendChild(mkSigF('🔵 تشبع شراء (نزل من 30 / صعد من 30)','os'));
+  sFilter.appendChild(mkSigF('⚡ إشارات أكيدة (داخل المنطقة)','conf'));
+  sFilter.appendChild(mkSigF('🟣 Trailing RSI (انعكاسات تتبعية)','trail'));
+  page.appendChild(s0);
+
   const s2=S('🔧 خيارات متقدمة');s2.appendChild(T('فلتر الدايفرجنس',['مفعّل — إشارات أقل لكن أدق','معطّل — كل الإشارات'],'enableDiv'));s2.appendChild(T('حجب الصفقات المفتوحة',['مفعّل — لا إشارات على العملات المفتوحة','معطّل'],'blockOpen'));s2.appendChild(T('الصوت',['مفعّل 🔔','معطّل 🔕'],'soundEnabled'));page.appendChild(s2);page.appendChild(SaveBtn());
 }
 return page;}
