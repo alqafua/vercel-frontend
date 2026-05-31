@@ -350,7 +350,7 @@ function rDCAPanel(){
   const sr=el('div',{style:{display:'flex',gap:'6px',gridColumn:'1/-1'}});
   ['LONG','SHORT'].forEach(s=>{const b=el('button',{style:{flex:'1',padding:'7px',borderRadius:'8px',border:'2px solid '+(dSide===s?(s==='LONG'?'var(--green)':'var(--red)'):'var(--border)'),background:dSide===s?(s==='LONG'?'rgba(46,213,115,.15)':'rgba(255,71,87,.15)'):'var(--bg3)',color:dSide===s?(s==='LONG'?'var(--green)':'var(--red)'):'var(--text2)',fontWeight:'700',fontSize:'11px',cursor:'pointer'}});b.textContent=s==='LONG'?'🟢 LONG':'🔴 SHORT';b.onclick=()=>{dSide=s;sr.innerHTML='';['LONG','SHORT'].forEach(s2=>{});panel.replaceWith(rDCAPanel());};sr.appendChild(b);});
   const f1=el('div');f1.appendChild(el('div',{style:{fontSize:'10px',color:'var(--text2)',marginBottom:'3px'}},'العملة'));f1.appendChild(symI);
-  const f2=el('div');f2.appendChild(el('div',{style:{fontSize:'10px',color:'var(--text2)',marginBottom:'3px'}},'السعر $'));f2.appendChild(priceI);
+  const f2=el('div');f2.appendChild(el('div',{style:{fontSize:'10px',color:'var(--text2)',marginBottom:'3px'}},'السعر $ (للحد إجباري)'));f2.appendChild(priceI);
   const f3=el('div');f3.appendChild(el('div',{style:{fontSize:'10px',color:'var(--text2)',marginBottom:'3px'}},'المبلغ $'));f3.appendChild(amtDI);
   const f4=el('div');f4.appendChild(el('div',{style:{fontSize:'10px',color:'var(--text2)',marginBottom:'3px'}},'الرافعة'));f4.appendChild(levI);
   grid.appendChild(f1);grid.appendChild(f2);grid.appendChild(f3);grid.appendChild(f4);
@@ -377,10 +377,11 @@ function rDCAPanel(){
   const saveBtn=el('button',{style:{width:'100%',padding:'10px',background:'rgba(255,165,2,.1)',border:'1px solid var(--orange)',borderRadius:'10px',color:'var(--orange)',fontWeight:'800',fontSize:'12px',cursor:'pointer'}});
   saveBtn.textContent='📌 حفظ أمر التعزيز';
   saveBtn.onclick=()=>{
-    const sym=(symI.value.trim().toUpperCase())+'USDT';
-    if(!symI.value.trim()||!priceI.value||!amtDI.value){alert('أدخل العملة والسعر والمبلغ');return;}
-    if(!selIds.length){alert('اختر حساباً واحداً على الأقل');return;}
+    const sym=(symI.value.trim().toUpperCase().replace(/USDT$/,''))+'USDT';
     const dcaOrderType=panel.dataset.dcaOrderType||'MARKET';
+    if(!symI.value.trim()||!amtDI.value){alert('أدخل العملة والمبلغ');return;}
+    if(dcaOrderType==='LIMIT'&&!priceI.value){alert('أدخل سعر الحد للأمر المحدد');return;}
+    if(!selIds.length){alert('اختر حساباً واحداً على الأقل');return;};
     const dcaTrailPct=panel.dataset.dcaTrailPct||'0';
     send('addDCA',{sym,price:parseFloat(priceI.value),amt:parseFloat(amtDI.value),useAmt:true,side:dSide,accIds:selIds,lev:parseInt(levI.value)||20,orderType:dcaOrderType,trailingPct:parseFloat(dcaTrailPct)});
     showNotif('✅ تم حفظ أمر التعزيز');
