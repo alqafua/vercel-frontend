@@ -213,7 +213,7 @@ function updateGridOnly(){
   const sv=document.querySelectorAll('.sval');
   if(sv.length>=5){sv[0].textContent=st.ob;sv[1].textContent=st.os;sv[2].textContent=st.conf;sv[3].textContent=st.trail;sv[4].textContent=st.total;}
 }
-function updateCards(){const st=getStats();const sv=document.querySelectorAll(".sval");if(sv.length>=5){sv[0].textContent=st.ob;sv[1].textContent=st.os;sv[2].textContent=st.conf;sv[3].textContent=st.trail;sv[4].textContent=st.total;}}
+function updateCards(){const st=getStats();const sv=document.querySelectorAll(".sval");if(sv.length>=5){sv[0].textContent=st.ob;sv[1].textContent=st.os;sv[2].textContent=st.conf;sv[3].textContent=st.trail;sv[4].textContent=st.total;}const sp=document.querySelector('.sys-pill');if(sp){const np=rSysStatusPill();np.className='sys-pill';sp.replaceWith(np);}}
 function schedRender(){if(!rPend){rPend=true;requestAnimationFrame(()=>{rPend=false;const sy=window.scrollY;render();window.scrollTo(0,sy);})}}
 function handleServerMsg(msg){
   let needRender=false;
@@ -236,7 +236,7 @@ function handleServerMsg(msg){
       if(C.settings.soundEnabled)playSound(msg.data.color==='confirmed'?'conf':msg.data.color==='purple'?'trail':'n');
       updateAlertBadge();showToast(msg.data);return;
     case 'priceUpdates':
-      Object.entries(msg.data).forEach(([sym,d])=>{if(C.symbolData[sym]){C.symbolData[sym].rsi=d.rsi;C.symbolData[sym].zone=d.zone;}});
+      Object.entries(msg.data).forEach(([sym,d])=>{if(C.symbolData[sym]){C.symbolData[sym].rsi=d.rsi;C.symbolData[sym].zone=d.zone;if(d.error===false)C.symbolData[sym].error=false;}});
       updateCards();return;
     case 'scanning':C.scanning=msg.data;break;
     case 'symbolData':
@@ -260,7 +260,7 @@ function handleServerMsg(msg){
     case 'executeResult':{const ok2=(msg.data||[]).filter(r=>r.ok).length;showNotif(ok2>0?'✅ تم التنفيذ في '+ok2+' حساب':'❌ فشل التنفيذ');break;}
     case 'dcaOrders':C.dcaOrders=msg.data;needRender=true;break;
     case 'pendingOrders':C.pendingOrders=msg.data;needRender=true;break;
-    case 'sysStatus':C.sysStatus=msg.data;rSysStatusBox();break;
+    case 'sysStatus':C.sysStatus=msg.data;rSysStatusBox();needRender=true;break;
     case 'sentSigs':C.sentSigs=msg.data||{};break;
     case 'manualOrderResult':
       if(msg.data.success)showNotif(`✅ ${msg.data.sym} ${msg.data.side} × ${msg.data.qty} (${msg.data.lev}x) — ${msg.data.acc}`);
@@ -449,17 +449,34 @@ function el(tag,at={},...ch){const e=document.createElement(tag);Object.entries(
 function rServerSetup(){let url=localStorage.getItem('rsi_server')||'';const box=el('div',{className:'login-box'});box.appendChild(el('div',{style:{fontSize:'40px',marginBottom:'12px'}},'🔗'));box.appendChild(el('div',{style:{fontSize:'20px',fontWeight:'800',color:'var(--accent)',marginBottom:'6px'}},'إعداد السيرفر'));box.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginBottom:'20px'}},'أدخل رابط سيرفر Railway'));const inp=el('input',{type:'text',className:'login-inp',placeholder:'https://xxx.up.railway.app',value:url,style:{direction:'ltr',letterSpacing:'0',marginBottom:'8px'}});inp.oninput=()=>url=inp.value.trim();const err=el('div',{className:'login-err'});const btn=el('button',{className:'login-btn'});btn.textContent='✅ حفظ والمتابعة';btn.onclick=async()=>{if(!url){err.textContent='أدخل الرابط';return;}btn.textContent='⏳ يتحقق...';try{const r=await fetch(url.replace(/\/$/,'')+'/api/ping');const d=await r.json();if(d.ok){localStorage.setItem('rsi_server',url.replace(/\/$/,''));render();}else throw 0;}catch(e){err.textContent='❌ تعذر الاتصال';btn.textContent='✅ حفظ والمتابعة';}};box.appendChild(inp);box.appendChild(err);box.appendChild(btn);box.appendChild(el('button',{className:'btn',style:{width:'100%',marginTop:'8px',justifyContent:'center'},onClick:()=>{localStorage.setItem('rsi_server','');render();}},'🏠 محلي'));return el('div',{className:'login-overlay'},box);}
 function rLogin(){let u='',p='';const ui=el('input',{type:'text',className:'login-inp',placeholder:'Username',autocomplete:'off'});ui.oninput=()=>u=ui.value;const pi=el('input',{type:'password',className:'login-inp pw',placeholder:'••••',autocomplete:'off'});pi.oninput=()=>p=pi.value;const err=el('div',{className:'login-err'});const form=el('form',{className:'login-form'},ui,pi,err,el('button',{type:'submit',className:'login-btn'},'دخول →'));form.onsubmit=async e=>{e.preventDefault();const ok=await doLogin(u,p);if(!ok){err.textContent='❌ بيانات خاطئة';ui.classList.add('err');pi.classList.add('err');const b=document.querySelector('.login-box');if(b){b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);}setTimeout(()=>{err.textContent='';ui.classList.remove('err');pi.classList.remove('err');},2500);}};return el('div',{className:'login-overlay'},el('div',{className:'login-box'},el('div',{style:{fontSize:'52px',marginBottom:'14px'}},'📊'),el('div',{style:{fontSize:'24px',fontWeight:'800',color:'var(--accent)',marginBottom:'4px'}},'RSI Scanner Pro'),el('div',{style:{fontSize:'12px',color:'var(--text2)',marginBottom:'24px'}},'Server Edition v3'),form));}
 function rSysStatusBox(){
-  const old=document.getElementById('sys-status-box');
+  // مسح الـ popup القديم عند التحديث
+  const old=document.getElementById('sys-status-popup');
   const s=C.sysStatus||{ok:true};
   if(s.ok){if(old)old.remove();return;}
   const box=old||document.createElement('div');
-  box.id='sys-status-box';
-  box.style.cssText='position:fixed;bottom:16px;left:16px;z-index:9999;padding:9px 14px;border-radius:10px;font-size:12px;font-weight:700;background:#dc2626;color:#fff;animation:blink 1s infinite;box-shadow:0 3px 12px rgba(220,38,38,.5);cursor:pointer;max-width:260px;line-height:1.4;direction:rtl';
+  box.id='sys-status-popup';
+  box.style.cssText='position:fixed;bottom:64px;left:16px;z-index:9999;padding:9px 14px;border-radius:10px;font-size:12px;font-weight:700;background:#dc2626;color:#fff;animation:blink 1s infinite;box-shadow:0 3px 12px rgba(220,38,38,.5);cursor:pointer;max-width:260px;line-height:1.4;direction:rtl';
   box.innerHTML='⚠️ خطأ في <b>'+s.errorLoc+'</b><br><span style="font-weight:400;font-size:11px">'+s.lastError+'</span><br><span style="font-size:10px;opacity:.8">انقر للإغلاق</span>';
   box.onclick=()=>{send('clearSysError');box.remove();};
   if(!old)document.body.appendChild(box);
 }
-function rNav(){const nav=el('div',{className:'navbar'});nav.appendChild(el('button',{className:'ntab '+(C.page==='dashboard'?'t-dash':''),onClick:()=>{C.page='dashboard';render();}},'📊 الداشبورد'));const sb=el('button',{className:'ntab '+(C.page==='subscribers'?'t-sub':''),onClick:()=>{C.page='subscribers';render();}});sb.appendChild(document.createTextNode('🪞 المشتركون'));if(C.accounts.length)sb.appendChild(el('span',{className:'nbadge'},String(C.accounts.length)));nav.appendChild(sb);nav.appendChild(el('button',{className:'ntab '+(C.page==='settings'?'t-set':''),onClick:()=>{C.page='settings';render();}},'⚙️ الإعدادات'));const nr=el('div',{className:'nav-right'});const pill=el('div',{className:'copy-pill '+(C.copyOn?'on':'off'),onClick:()=>send('toggleCopy')});pill.appendChild(el('span',{className:'cpd '+(C.copyOn?'on':'off')}));pill.appendChild(document.createTextNode(C.copyOn?'نشط':'Copy'));nr.appendChild(pill);nr.appendChild(el('span',{className:'ws-ind '+(C.wsConn?'on':'off')},C.wsConn?'🟢 متصل':'🔴 منقطع'));nav.appendChild(nr);return nav;}
+
+function rSysStatusPill(){
+  const s=C.sysStatus||{ok:true};
+  const ok=s.ok;
+  const errCount=Object.values(C.symbolData).filter(d=>d&&d.error).length;
+  const hasSymErr=errCount>0;
+  // أحمر لو في خطأ API أو خطأ في عملات كثيرة، أخضر لو كل شي تمام
+  const bad=!ok||hasSymErr;
+  const pill=document.createElement('div');
+  pill.className='sys-pill';
+  pill.style.cssText='display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid '+(bad?'#dc2626':'#16a34a')+';background:'+(bad?'rgba(220,38,38,.15)':'rgba(22,163,74,.15)')+';color:'+(bad?'#f87171':'#4ade80')+(bad?';animation:blink 1s infinite':'');
+  if(!ok){pill.textContent='⚠️ '+s.errorLoc;pill.onclick=()=>rSysStatusBox();}
+  else if(hasSymErr){pill.textContent='⚠️ خطأ '+errCount+' عملة';pill.onclick=()=>{send('scanNow');showNotif('🔄 إعادة فحص...',1500);};}
+  else{pill.textContent='✅ يعمل';}
+  return pill;
+}
+function rNav(){const nav=el('div',{className:'navbar'});nav.appendChild(el('button',{className:'ntab '+(C.page==='dashboard'?'t-dash':''),onClick:()=>{C.page='dashboard';render();}},'📊 الداشبورد'));const sb=el('button',{className:'ntab '+(C.page==='subscribers'?'t-sub':''),onClick:()=>{C.page='subscribers';render();}});sb.appendChild(document.createTextNode('🪞 المشتركون'));if(C.accounts.length)sb.appendChild(el('span',{className:'nbadge'},String(C.accounts.length)));nav.appendChild(sb);nav.appendChild(el('button',{className:'ntab '+(C.page==='settings'?'t-set':''),onClick:()=>{C.page='settings';render();}},'⚙️ الإعدادات'));const nr=el('div',{className:'nav-right'});const pill=el('div',{className:'copy-pill '+(C.copyOn?'on':'off'),onClick:()=>send('toggleCopy')});pill.appendChild(el('span',{className:'cpd '+(C.copyOn?'on':'off')}));pill.appendChild(document.createTextNode(C.copyOn?'نشط':'Copy'));nr.appendChild(pill);nr.appendChild(el('span',{className:'ws-ind '+(C.wsConn?'on':'off')},C.wsConn?'🟢 متصل':'🔴 منقطع'));nr.appendChild(rSysStatusPill());nav.appendChild(nr);return nav;}
 function rSettingsPage(){const page=el('div',{className:'set-page'});page.appendChild(el('div',{className:'set-title'},'⚙️ الإعدادات'));const tabs=el('div',{className:'set-tabs'});[['cornix','⚙️ Cornix'],['telegram','📤 تلغرام'],['trailing','🟣 Trailing RSI'],['liquidity','💧 السيولة'],['scanner','🔍 السكانر']].forEach(([k,lb])=>{tabs.appendChild(el('button',{className:'set-tab '+(settingsTab===k?'active':''),onClick:()=>{settingsTab=k;render();}},lb));});page.appendChild(tabs);
 const S=(t)=>{const s=el('div',{className:'set-section'});s.appendChild(el('div',{className:'set-sec-title'},t));return s;};
 const G=()=>el('div',{className:'set-grid'});
