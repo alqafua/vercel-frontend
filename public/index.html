@@ -120,10 +120,10 @@ function getServerUrl(){return(localStorage.getItem('rsi_server')||'').replace(/
 function getApiUrl(p){const b=getServerUrl();return b?b+p:p;}
 function getWsUrl(){const b=getServerUrl();const base=b?b.replace('https://','wss://').replace('http://','ws://'):(location.protocol==='https:'?'wss':'ws')+'://'+location.host;return base+'?token='+(C.token||localStorage.getItem('rsi_token')||'');}
 function needsSetup(){return(location.hostname.includes('vercel.app')||location.hostname.includes('vercel.sh'))&&localStorage.getItem('rsi_server')===null;}
-const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},dcaOrders:[],pendingOrders:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{}};
+const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true}},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{}};
 let settingsTab='cornix',showForm=false,formAccId=null,showLog=false,showDCA=false,dcaSym='',dcaSide='LONG';
-let showManualOrder=false,manualOrderAccId=null;
-let fd={name:'',apiKey:'',apiSecret:'',sizeRatio:'5',tag:'personal',isMaster:false};
+let showManualOrder=false,manualOrderAccId=null,reportAccId=null;
+let fd={name:'',apiKey:'',apiSecret:'',sizeRatio:'5',tag:'personal',isMaster:false,copyExisting:false};
 let audioCtx=null,toastRef=null,rPend=false,ws=null,wsReconn=null;
 function connectWS(){if(ws)return;ws=new WebSocket(getWsUrl());ws.onopen=()=>{C.wsConn=true;render();};ws.onclose=()=>{C.wsConn=false;ws=null;render();wsReconn=setTimeout(connectWS,3000);};ws.onerror=()=>{};ws.onmessage=(ev)=>{try{handleServerMsg(JSON.parse(ev.data));}catch(e){}}}
 function send(type,data){if(ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type,data}));}
@@ -267,6 +267,8 @@ function handleServerMsg(msg){
       else showNotif('❌ فشل: '+msg.data.error);
       break;
     case 'dcaError':showNotif('❌ '+msg.data);break;
+    case 'waitQueue':C.waitQueue=msg.data||[];needRender=true;break;
+    case 'reportSent':showNotif('✅ تم إرسال التقرير على تلغرام');break;
     case 'exportData':{
       const blob=new Blob([JSON.stringify(msg.data,null,2)],{type:'application/json'});
       const a=document.createElement('a');a.href=URL.createObjectURL(blob);
@@ -483,7 +485,7 @@ function rSysStatusPill(){
   else{pill.textContent='✅ يعمل';}
   return pill;
 }
-function rNav(){const nav=el('div',{className:'navbar'});nav.appendChild(el('button',{className:'ntab '+(C.page==='dashboard'?'t-dash':''),onClick:()=>{C.page='dashboard';render();}},'📊 الداشبورد'));const sb=el('button',{className:'ntab '+(C.page==='subscribers'?'t-sub':''),onClick:()=>{C.page='subscribers';render();}});sb.appendChild(document.createTextNode('🪞 المشتركون'));if(C.accounts.length)sb.appendChild(el('span',{className:'nbadge'},String(C.accounts.length)));nav.appendChild(sb);nav.appendChild(el('button',{className:'ntab '+(C.page==='settings'?'t-set':''),onClick:()=>{C.page='settings';render();}},'⚙️ الإعدادات'));const nr=el('div',{className:'nav-right'});const pill=el('div',{className:'copy-pill '+(C.copyOn?'on':'off'),onClick:()=>send('toggleCopy')});pill.appendChild(el('span',{className:'cpd '+(C.copyOn?'on':'off')}));pill.appendChild(document.createTextNode(C.copyOn?'نشط':'Copy'));nr.appendChild(pill);nr.appendChild(el('span',{className:'ws-ind '+(C.wsConn?'on':'off')},C.wsConn?'🟢 متصل':'🔴 منقطع'));nav.appendChild(nr);return nav;}
+function rNav(){const nav=el('div',{className:'navbar'});nav.appendChild(el('button',{className:'ntab '+(C.page==='dashboard'?'t-dash':''),onClick:()=>{C.page='dashboard';render();}},'📊 الداشبورد'));const sb=el('button',{className:'ntab '+(C.page==='subscribers'?'t-sub':''),onClick:()=>{C.page='subscribers';render();}});sb.appendChild(document.createTextNode('🪞 المشتركون'));if(C.accounts.length)sb.appendChild(el('span',{className:'nbadge'},String(C.accounts.length)));if(C.waitQueue&&C.waitQueue.length)sb.appendChild(el('span',{className:'nbadge',style:{background:'var(--orange)',marginRight:'2px'}},String(C.waitQueue.length)));nav.appendChild(sb);nav.appendChild(el('button',{className:'ntab '+(C.page==='settings'?'t-set':''),onClick:()=>{C.page='settings';render();}},'⚙️ الإعدادات'));const nr=el('div',{className:'nav-right'});const pill=el('div',{className:'copy-pill '+(C.copyOn?'on':'off'),onClick:()=>send('toggleCopy')});pill.appendChild(el('span',{className:'cpd '+(C.copyOn?'on':'off')}));pill.appendChild(document.createTextNode(C.copyOn?'نشط':'Copy'));nr.appendChild(pill);nr.appendChild(el('span',{className:'ws-ind '+(C.wsConn?'on':'off')},C.wsConn?'🟢 متصل':'🔴 منقطع'));nav.appendChild(nr);return nav;}
 function rSettingsPage(){const page=el('div',{className:'set-page'});page.appendChild(el('div',{className:'set-title'},'⚙️ الإعدادات'));const tabs=el('div',{className:'set-tabs'});[['cornix','⚙️ Cornix'],['telegram','📤 تلغرام'],['trailing','🟣 Trailing RSI'],['liquidity','💧 السيولة'],['scanner','🔍 السكانر']].forEach(([k,lb])=>{tabs.appendChild(el('button',{className:'set-tab '+(settingsTab===k?'active':''),onClick:()=>{settingsTab=k;render();}},lb));});page.appendChild(tabs);
 const S=(t)=>{const s=el('div',{className:'set-section'});s.appendChild(el('div',{className:'set-sec-title'},t));return s;};
 const G=()=>el('div',{className:'set-grid'});
@@ -530,7 +532,26 @@ if(settingsTab==='scanner'){
   page.appendChild(sSig);
 
 
-  const s2=S('🔧 خيارات متقدمة');s2.appendChild(T('فلتر الدايفرجنس',['مفعّل — إشارات أقل لكن أدق','معطّل — كل الإشارات'],'enableDiv'));s2.appendChild(T('حجب الصفقات المفتوحة',['مفعّل — لا إشارات على العملات المفتوحة','معطّل'],'blockOpen'));s2.appendChild(T('الصوت',['مفعّل 🔔','معطّل 🔕'],'soundEnabled'));page.appendChild(s2);page.appendChild(SaveBtn());
+  const s2=S('🔧 خيارات متقدمة');s2.appendChild(T('فلتر الدايفرجنس',['مفعّل — إشارات أقل لكن أدق','معطّل — كل الإشارات'],'enableDiv'));s2.appendChild(T('حجب الصفقات المفتوحة',['مفعّل — لا إشارات على العملات المفتوحة','معطّل'],'blockOpen'));s2.appendChild(T('الصوت',['مفعّل 🔔','معطّل 🔕'],'soundEnabled'));
+  const g2b=G();g2b.style.marginTop='10px';g2b.appendChild(F('الحد الأقصى للصفقات المفتوحة (0 = بلا حد)','number','maxOpenTrades',{min:'0',max:'100',step:'1',placeholder:'0'}));s2.appendChild(g2b);
+  s2.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'4px',marginBottom:'8px'}},'عند الوصول للحد → الإشارات تُضاف لقائمة الانتظار بدل الإرسال'));
+  page.appendChild(s2);
+  // فلتر أنواع الإشارات التي تدخل قائمة الانتظار
+  const sQueue=S('⏳ قائمة الانتظار — أنواع الإشارات المسموح بها');
+  if(!C.settings.sigQueueFilters)C.settings.sigQueueFilters={ob:true,os:true,conf:true,trail:true};
+  const sqF=C.settings.sigQueueFilters;
+  const mkQBtn=(label,key)=>{
+    const isOn=sqF[key]!==false;
+    const row=el('div',{className:'set-toggle '+(isOn?'on':''),style:{marginBottom:'8px'},onClick:()=>{sqF[key]=!sqF[key];render();}});
+    const knob=el('div',{className:'stog-knob '+(isOn?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);
+    const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},label));lbl.appendChild(el('div',{className:'stog-sub'},isOn?'✅ تدخل قائمة الانتظار':'❌ تُهمَل'));row.appendChild(lbl);return row;
+  };
+  sQueue.appendChild(mkQBtn('🔴 تشبع بيع (OB)','ob'));
+  sQueue.appendChild(mkQBtn('🔵 تشبع شراء (OS)','os'));
+  sQueue.appendChild(mkQBtn('⚡ إشارات أكيدة','conf'));
+  sQueue.appendChild(mkQBtn('🟣 Trailing RSI','trail'));
+  page.appendChild(sQueue);
+  page.appendChild(SaveBtn());
 }
 // ── تصدير واستعادة ──────────────────────────────
 const bakSec=S('💾 تصدير واستعادة البيانات');
@@ -632,6 +653,37 @@ function rSubPage(){const page=el('div',{className:'sub-page'});const bar=el('di
 const ena=C.accounts.filter(a=>!a.isMaster&&a.isEnabled).length;const totBal=C.accounts.reduce((s,a)=>s+(parseFloat(a.balance)||0),0);const totTrades=C.accounts.reduce((s,a)=>s+(a.stats?.closes||0),0);const totWins=C.accounts.reduce((s,a)=>s+(a.stats?.wins||0),0);const totPnl=C.accounts.reduce((s,a)=>s+(a.livePositions||[]).reduce((ss,p)=>ss+parseFloat(p.unRealizedProfit||0),0),0);
 const ov=el('div',{className:'ov-grid'});const mkOV=(lb,v,c='')=>{const card=el('div',{className:'ov-card'});card.appendChild(el('div',{className:'ov-label'},lb));card.appendChild(el('div',{className:'ov-val '+c},v));return card;};
 ov.appendChild(mkOV('الحسابات',String(C.accounts.length)));ov.appendChild(mkOV('نشطة',String(ena),'c-green'));ov.appendChild(mkOV('الرصيد','$'+totBal.toFixed(0),'c-confirmed'));ov.appendChild(mkOV('PnL',(totPnl>=0?'+':'')+'$'+totPnl.toFixed(2),totPnl>=0?'c-green':'c-red'));ov.appendChild(mkOV('الصفقات',String(totTrades)));ov.appendChild(mkOV('نجاح',totTrades?(totWins/totTrades*100).toFixed(0)+'%':'—','c-green'));page.appendChild(ov);
+// قائمة الانتظار الذكية
+if(C.waitQueue&&C.waitQueue.length){
+  const wqSec=el('div',{style:{background:'var(--bg2)',border:'1px solid rgba(255,165,2,.3)',borderRadius:'16px',padding:'16px',marginBottom:'16px'}});
+  const wqHdr=el('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'12px'}});
+  wqHdr.appendChild(el('div',{style:{fontSize:'14px',fontWeight:'800',color:'var(--orange)'}},'⏳ قائمة الانتظار ('+C.waitQueue.length+')'));
+  const clrBtn=el('button',{style:{padding:'4px 12px',background:'rgba(255,71,87,.1)',border:'1px solid var(--red)',color:'var(--red)',borderRadius:'8px',fontSize:'11px',cursor:'pointer'}});
+  clrBtn.textContent='🗑 مسح الكل';clrBtn.onclick=()=>{if(confirm('مسح قائمة الانتظار؟'))send('clearQueue',{});};
+  wqHdr.appendChild(clrBtn);wqSec.appendChild(wqHdr);
+  // احسب نسبة الانعكاس وافرز
+  const sorted=[...C.waitQueue].map(q=>{
+    const sp=q.signalPrice||0;
+    const rev=sp>0&&(q.reversalPct||0)>0?q.reversalPct:0;
+    return{...q,reversalPct:rev};
+  }).sort((a,b)=>b.reversalPct-a.reversalPct);
+  sorted.forEach(q=>{
+    const typeLabel={ob:'🔴 OB',os:'🔵 OS',conf:'⚡ أكيدة',trail:'🟣 Trail'}[q.signalType]||'';
+    const row=el('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'8px 12px',background:'rgba(255,165,2,.04)',border:'1px solid rgba(255,165,2,.15)',borderRadius:'10px',marginBottom:'6px',flexWrap:'wrap'}});
+    const info=el('div',{style:{flex:'1',minWidth:'120px'}});
+    info.appendChild(el('div',{style:{fontWeight:'800',fontSize:'12px',color:q.side==='LONG'?'var(--green)':'var(--red)'}},(q.side==='LONG'?'🟢':'🔴')+' '+q.symbol.replace('USDT','')+' — '+typeLabel));
+    info.appendChild(el('div',{style:{fontSize:'10px',color:'var(--text2)',marginTop:'2px'}},`سعر الإشارة: $${q.signalPrice?.toFixed?.(4)||'—'} • ${q.addedTime}`));
+    if(q.reversalPct>0)info.appendChild(el('div',{style:{fontSize:'10px',color:'var(--orange)',fontWeight:'700',marginTop:'1px'}},'📉 انعكاس: '+q.reversalPct.toFixed(2)+'%'));
+    row.appendChild(info);
+    const rowBtns=el('div',{style:{display:'flex',gap:'5px'}});
+    const sndBtn=el('button',{style:{padding:'4px 12px',background:'rgba(0,229,255,.1)',border:'1px solid var(--accent)',color:'var(--accent)',borderRadius:'8px',fontSize:'11px',cursor:'pointer',fontWeight:'700'}});
+    sndBtn.textContent='📤 إرسال';sndBtn.onclick=()=>{if(confirm('إرسال '+q.symbol+' الآن بالسعر الحالي؟')){send('sendQueueItem',{id:q.id});sndBtn.textContent='⏳';}};
+    const delBtn=el('button',{style:{padding:'4px 8px',background:'rgba(255,71,87,.1)',border:'1px solid var(--red)',color:'var(--red)',borderRadius:'8px',fontSize:'11px',cursor:'pointer'}});
+    delBtn.textContent='✕';delBtn.onclick=()=>send('removeQueueItem',{id:q.id});
+    rowBtns.appendChild(sndBtn);rowBtns.appendChild(delBtn);row.appendChild(rowBtns);wqSec.appendChild(row);
+  });
+  page.appendChild(wqSec);
+}
 const csw=el('div',{className:'csw '+(C.copyOn?'on':'off'),onClick:()=>send('toggleCopy')});const tog=el('div',{className:'csw-tog '+(C.copyOn?'on':'off')});tog.appendChild(el('div',{className:'csw-knob '+(C.copyOn?'on':'off')}));csw.appendChild(tog);const txt=el('div',{});txt.appendChild(el('div',{style:{fontSize:'15px',fontWeight:'800',color:C.copyOn?'var(--green)':'var(--red)'}},C.copyOn?'Copy Trading: تشغيل ✅':'Copy Trading: متوقف ⏸'));txt.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'3px'}},C.copyOn?`يفحص كل 1.5s • ${ena} حساب`:'اضغط للبدء'));csw.appendChild(txt);page.appendChild(csw);
 if(C.copyOn){const em=el('button',{className:'em-btn',onClick:()=>{if(confirm('🚨 إغلاق كل الصفقات؟'))send('emergencyStop');}});em.textContent='🚨 إيقاف طارئ — إغلاق كل الصفقات';page.appendChild(em);}
 if(showForm)page.appendChild(rAddForm());
@@ -641,7 +693,7 @@ if(C.accounts.length)page.appendChild(rDCAPanel());
 const pOrds=rPendingOrders();if(pOrds)page.appendChild(pOrds);
 const ls=el('div',{style:{marginTop:'20px'}});const lh=el('div',{className:'log-hdr',onClick:()=>{showLog=!showLog;render();}});lh.appendChild(el('span',{style:{fontWeight:'700',fontSize:'13px'}},'📋 سجل العمليات'));lh.appendChild(el('span',{style:{color:'var(--text2)'}},showLog?'▲':'▼'));ls.appendChild(lh);if(showLog){const lb2=el('div',{className:'log-body'});if(!C.copyLog.length)lb2.appendChild(el('div',{style:{padding:'20px',textAlign:'center',color:'var(--text2)',fontSize:'12px'}},'لا يوجد سجل'));else C.copyLog.slice(0,100).forEach(log=>{const r=el('div',{className:'log-row '+log.type});r.appendChild(el('span',{className:'log-icon'},log.type==='success'?'✅':log.type==='fail'?'❌':'ℹ️'));const m=el('span',{className:'log-msg'});m.textContent=log.text;r.appendChild(m);r.appendChild(el('span',{className:'log-time'},log.time));lb2.appendChild(r);});ls.appendChild(lb2);}page.appendChild(ls);return page;}
 function rAccCard(acc){const isMaster=acc.isMaster,pos=acc.livePositions||[],bal=acc.balance;const st=acc.apiOk===true?'ok':acc.apiOk===false?'fail':'unknown';const totPnl=pos.reduce((s,p)=>s+parseFloat(p.unRealizedProfit||0),0);const stats=acc.stats||{opens:0,closes:0,wins:0,losses:0,tot:0};const card=el('div',{className:'acc-card '+(isMaster?'master':'')});const head=el('div',{className:'acc-head '+(isMaster?'m':'f')});const nr=el('div',{className:'acc-name-row'});if(isMaster)nr.appendChild(el('span',{className:'acc-mbdg'},'⭐ MASTER'));nr.appendChild(el('span',{className:'acc-name'},acc.name));const tg=acc.tag||'personal';nr.appendChild(el('span',{className:'acc-tag '+tg},tg==='personal'?'👤 شخصي':tg==='family'?'👨‍👩‍👧 عائلة':'👥 آخر'));head.appendChild(nr);const apibtn=el('div',{className:'api-ind '+st,onClick:()=>send('refreshAccount',{id:acc.id})});apibtn.appendChild(el('span',{className:'apidot '+st}));apibtn.appendChild(document.createTextNode(st==='ok'?'🟢 متصل':st==='fail'?'🔴 فشل':'⚪ غير محقق'));head.appendChild(apibtn);const btns=el('div',{className:'acc-btns'});if(!isMaster)btns.appendChild(el('button',{className:'abtn '+(acc.isEnabled!==false?'toff':'ton'),onClick:()=>send('toggleAccount',{id:acc.id})},acc.isEnabled!==false?'⏸ إيقاف':'▶️ تشغيل'));btns.appendChild(el('button',{className:'abtn ref',onClick:()=>{send('refreshAllAccounts',{});showNotif('🔄 جاري التحديث...',1500);}},'🔄 الكل'));
-  btns.appendChild(el('button',{className:'abtn',style:{background:'rgba(0,229,255,.1)',borderColor:'var(--accent)',color:'var(--accent)',padding:'4px 10px',fontSize:'10px'},onClick:()=>{showManualOrder=true;manualOrderAccId=acc.id;render();}},'⚡ يدوي'));btns.appendChild(el('button',{className:'abtn',style:{background:'rgba(165,94,234,.1)',borderColor:'var(--purple)',color:'var(--purple)',padding:'4px 10px',fontSize:'10px'},onClick:()=>{if(confirm('إرسال تقرير '+acc.name+' على تلغرام؟'))send('sendReport',{id:acc.id});}},'📊 تقرير'));btns.appendChild(el('button',{className:'abtn edit',onClick:()=>{showForm=true;formAccId=acc.id;fd={...acc,apiKey:'',apiSecret:''};render();}},'✏️'));btns.appendChild(el('button',{className:'abtn del',onClick:()=>{if(confirm('حذف '+acc.name+'؟'))send('deleteAccount',{id:acc.id});}},'🗑'));head.appendChild(btns);
+  btns.appendChild(el('button',{className:'abtn',style:{background:'rgba(0,229,255,.1)',borderColor:'var(--accent)',color:'var(--accent)',padding:'4px 10px',fontSize:'10px'},onClick:()=>{showManualOrder=true;manualOrderAccId=acc.id;render();}},'⚡ يدوي'));btns.appendChild(el('button',{className:'abtn',style:{background:'rgba(165,94,234,.1)',borderColor:'var(--purple)',color:'var(--purple)',padding:'4px 10px',fontSize:'10px'},onClick:()=>{reportAccId=acc.id;render();}},'📊 تقرير'));btns.appendChild(el('button',{className:'abtn edit',onClick:()=>{showForm=true;formAccId=acc.id;fd={...acc,apiKey:'',apiSecret:''};render();}},'✏️'));btns.appendChild(el('button',{className:'abtn del',onClick:()=>{if(confirm('حذف '+acc.name+'؟'))send('deleteAccount',{id:acc.id});}},'🗑'));head.appendChild(btns);
   card.appendChild(head);
   // لوحة الأمر اليدوي تظهر تحت رأس الحساب مباشرةً
   if(showManualOrder&&manualOrderAccId===acc.id){const mp=rManualOrderPanel();if(mp)card.appendChild(mp);}
@@ -688,12 +740,68 @@ body.appendChild(pt);const ab=el('div',{style:{display:'flex',gap:'8px',alignIte
   }
   // إغلاق صفقة فردية - أضف زر لكل صفقة في الجدول
   card.appendChild(body);return card;}
-function rAddForm(){const editing=formAccId!=null?C.accounts.find(a=>a.id===formAccId):null;const isFirst=C.accounts.length===0&&!editing;const form=el('div',{className:'add-form'});form.appendChild(el('div',{style:{fontSize:'13px',fontWeight:'700',color:'var(--accent)',marginBottom:'10px'}},editing?'✏️ تعديل: '+editing.name:'➕ إضافة حساب'));if(isFirst){const n=el('div',{style:{background:'rgba(0,229,255,.06)',border:'1px solid rgba(0,229,255,.2)',borderRadius:'8px',padding:'9px 12px',fontSize:'11px',color:'var(--accent)',marginBottom:'10px'}});n.innerHTML='⭐ <b>أول حساب = Master تلقائياً</b>';form.appendChild(n);}const grid=el('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'12px'}});function af(lb,field,type='text',ex={}){const w=el('div',{className:'aff'});w.appendChild(el('label',{},lb));const i=el('input',{type,value:fd[field]||'',...ex});i.oninput=()=>fd[field]=i.value;w.appendChild(i);return w;}function afs(lb,field,opts){const w=el('div',{className:'aff'});w.appendChild(el('label',{},lb));const s=el('select',{});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(v==(fd[field]||opts[0][0]))o.setAttribute('selected','');s.appendChild(o);});s.onchange=()=>fd[field]=s.value;w.appendChild(s);return w;}grid.appendChild(af('اسم الحساب','name'));grid.appendChild(afs('التصنيف','tag',[['personal','👤 شخصي'],['family','👨‍👩‍👧 عائلة'],['other','👥 آخر']]));const kw=el('div',{className:'aff',style:{gridColumn:'1/-1'}});kw.appendChild(el('label',{},'🔑 API Key (Trading Only)'));const ki=el('input',{type:'text',value:fd.apiKey||'',placeholder:'أدخل API Key',style:{fontFamily:'monospace',fontSize:'11px'}});ki.oninput=()=>fd.apiKey=ki.value.trim();kw.appendChild(ki);grid.appendChild(kw);const sw=el('div',{className:'aff',style:{gridColumn:'1/-1'}});sw.appendChild(el('label',{},'🔒 API Secret'));const si2=el('input',{type:'password',value:fd.apiSecret||'',placeholder:'أدخل API Secret',style:{fontFamily:'monospace',letterSpacing:'2px'}});si2.oninput=()=>fd.apiSecret=si2.value.trim();sw.appendChild(si2);grid.appendChild(sw);if(!isFirst)grid.appendChild(af('💰 حجم الصفقة (% رصيد)','sizeRatio','number',{min:'0.1',max:'100',step:'0.1'}));form.appendChild(grid);const btns=el('div',{style:{display:'flex',gap:'8px'}});const testBtn=el('button',{className:'af-btn test',onClick:()=>{if(!fd.apiKey||!fd.apiSecret){alert('أدخل API Key و Secret');return;}testBtn.textContent='⏳ يتحقق...';send('testAccount',{apiKey:fd.apiKey,apiSecret:fd.apiSecret});setTimeout(()=>testBtn.textContent='🔌 اختبار',3000);}});testBtn.textContent='🔌 اختبار';const saveBtn=el('button',{className:'af-btn save',onClick:()=>{if(!fd.name||!fd.apiKey||!fd.apiSecret){alert('أدخل كل البيانات');return;}saveBtn.textContent='⏳...';if(editing)send('updateAccount',{...editing,...fd});else send('addAccount',{...fd,isMaster:isFirst||fd.isMaster||false});}});saveBtn.textContent='💾 حفظ';btns.appendChild(saveBtn);btns.appendChild(testBtn);if(editing)btns.appendChild(el('button',{className:'af-btn cancel',onClick:()=>{showForm=false;formAccId=null;render();}},'✕'));form.appendChild(btns);return form;}
+function rReportPopup(acc){
+  const closed=acc.closedTrades||[];
+  const totalPnl=closed.reduce((s,t)=>s+(t.pnl||0),0);
+  const overlay=el('div',{style:{position:'fixed',inset:'0',background:'rgba(0,0,0,.75)',zIndex:'999',display:'flex',alignItems:'flex-start',justifyContent:'center',paddingTop:'60px',paddingBottom:'20px',overflowY:'auto'},onClick:(e)=>{if(e.target===overlay){reportAccId=null;render();}}});
+  const box=el('div',{style:{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'18px',padding:'20px',width:'380px',maxWidth:'95vw',maxHeight:'80vh',overflowY:'auto',animation:'fadeup .25s ease'}});
+  // رأس
+  const hd=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px'}});
+  hd.appendChild(el('div',{style:{fontSize:'15px',fontWeight:'800',color:'var(--accent)'}},'📊 '+acc.name));
+  hd.appendChild(el('button',{style:{background:'none',border:'none',color:'var(--text2)',fontSize:'20px',cursor:'pointer'},onClick:()=>{reportAccId=null;render();}},'✕'));
+  box.appendChild(hd);
+  // قائمة الصفقات
+  if(closed.length){
+    closed.forEach(t=>{
+      const row=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 12px',borderRadius:'8px',marginBottom:'4px',background:t.pnl>=0?'rgba(46,213,115,.06)':'rgba(255,71,87,.06)'}});
+      row.appendChild(el('div',{style:{fontWeight:'700',fontSize:'13px'}},(t.side==='LONG'?'🟢':'🔴')+' '+t.symbol.replace('USDT','')));
+      row.appendChild(el('div',{style:{fontWeight:'800',fontSize:'14px',color:t.pnl>=0?'var(--green)':'var(--red)'}},(t.pnl>=0?'+':'')+' $'+(t.pnl||0).toFixed(2)));
+      box.appendChild(row);
+    });
+    // الإجمالي
+    const tot=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'11px 12px',borderRadius:'10px',marginTop:'8px',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)'}});
+    tot.appendChild(el('div',{style:{fontWeight:'800',fontSize:'14px',color:'var(--text)'}},'💰 الإجمالي'));
+    tot.appendChild(el('div',{style:{fontWeight:'800',fontSize:'16px',color:totalPnl>=0?'var(--green)':'var(--red)'}},(totalPnl>=0?'+':'')+' $'+totalPnl.toFixed(2)));
+    box.appendChild(tot);
+  } else {
+    box.appendChild(el('div',{style:{textAlign:'center',padding:'28px',color:'var(--text2)',fontSize:'12px'}},'📭 لا توجد صفقات مغلقة بعد'));
+  }
+  // زر الإرسال
+  const sendBtn=el('button',{style:{width:'100%',marginTop:'14px',padding:'12px',background:'rgba(165,94,234,.12)',border:'2px solid var(--purple)',borderRadius:'12px',color:'var(--purple)',fontWeight:'800',fontSize:'13px',cursor:'pointer'}});
+  sendBtn.textContent='📤 إرسال للقناة على تلغرام';
+  sendBtn.onclick=()=>{send('sendReport',{id:acc.id});sendBtn.textContent='⏳ يرسل...';sendBtn.disabled=true;setTimeout(()=>{sendBtn.textContent='📤 إرسال للقناة على تلغرام';sendBtn.disabled=false;},3000);};
+  box.appendChild(sendBtn);
+  overlay.appendChild(box);return overlay;
+}
+function rAddForm(){const editing=formAccId!=null?C.accounts.find(a=>a.id===formAccId):null;const isFirst=C.accounts.length===0&&!editing;const form=el('div',{className:'add-form'});form.appendChild(el('div',{style:{fontSize:'13px',fontWeight:'700',color:'var(--accent)',marginBottom:'10px'}},editing?'✏️ تعديل: '+editing.name:'➕ إضافة حساب'));if(isFirst){const n=el('div',{style:{background:'rgba(0,229,255,.06)',border:'1px solid rgba(0,229,255,.2)',borderRadius:'8px',padding:'9px 12px',fontSize:'11px',color:'var(--accent)',marginBottom:'10px'}});n.innerHTML='⭐ <b>أول حساب = Master تلقائياً</b>';form.appendChild(n);}const grid=el('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'12px'}});function af(lb,field,type='text',ex={}){const w=el('div',{className:'aff'});w.appendChild(el('label',{},lb));const i=el('input',{type,value:fd[field]||'',...ex});i.oninput=()=>fd[field]=i.value;w.appendChild(i);return w;}function afs(lb,field,opts){const w=el('div',{className:'aff'});w.appendChild(el('label',{},lb));const s=el('select',{});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(v==(fd[field]||opts[0][0]))o.setAttribute('selected','');s.appendChild(o);});s.onchange=()=>fd[field]=s.value;w.appendChild(s);return w;}grid.appendChild(af('اسم الحساب','name'));grid.appendChild(afs('التصنيف','tag',[['personal','👤 شخصي'],['family','👨‍👩‍👧 عائلة'],['other','👥 آخر']]));const kw=el('div',{className:'aff',style:{gridColumn:'1/-1'}});kw.appendChild(el('label',{},'🔑 API Key (Trading Only)'));const ki=el('input',{type:'text',value:fd.apiKey||'',placeholder:'أدخل API Key',style:{fontFamily:'monospace',fontSize:'11px'}});ki.oninput=()=>fd.apiKey=ki.value.trim();kw.appendChild(ki);grid.appendChild(kw);const sw=el('div',{className:'aff',style:{gridColumn:'1/-1'}});sw.appendChild(el('label',{},'🔒 API Secret'));const si2=el('input',{type:'password',value:fd.apiSecret||'',placeholder:'أدخل API Secret',style:{fontFamily:'monospace',letterSpacing:'2px'}});si2.oninput=()=>fd.apiSecret=si2.value.trim();sw.appendChild(si2);grid.appendChild(sw);if(!isFirst)grid.appendChild(af('💰 حجم الصفقة (% رصيد)','sizeRatio','number',{min:'0.1',max:'100',step:'0.1'}));form.appendChild(grid);
+if(!isFirst&&!editing&&C.accounts.some(a=>a.isMaster)){
+  const cpSec=el('div',{style:{marginBottom:'12px'}});
+  cpSec.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'6px',fontWeight:'600'}},'📋 طريقة بدء النسخ:'));
+  const mkOpt=(val,icon,title,sub)=>{
+    const isSelected=!!(fd.copyExisting)===val;
+    const card=el('div',{style:{display:'flex',alignItems:'center',gap:'10px',padding:'10px 14px',background:isSelected?(val?'rgba(0,229,255,.08)':'rgba(46,213,115,.06)'):'rgba(255,255,255,.02)',border:'2px solid '+(isSelected?(val?'var(--accent)':'var(--green)'):'rgba(255,255,255,.08)'),borderRadius:'10px',cursor:'pointer',transition:'all .15s',marginBottom:'6px'}});
+    const dot=el('div',{style:{width:'16px',height:'16px',borderRadius:'50%',border:'2px solid '+(isSelected?(val?'var(--accent)':'var(--green)'):'var(--text2)'),flexShrink:'0',display:'flex',alignItems:'center',justifyContent:'center'}});
+    if(isSelected)dot.appendChild(el('div',{style:{width:'8px',height:'8px',borderRadius:'50%',background:val?'var(--accent)':'var(--green)'}}));
+    card.appendChild(dot);
+    const lbl=el('div',{style:{flex:'1'}});
+    lbl.appendChild(el('div',{style:{fontSize:'12px',fontWeight:'700',color:isSelected?(val?'var(--accent)':'var(--green)'):'var(--text)'}},icon+' '+title));
+    lbl.appendChild(el('div',{style:{fontSize:'10px',color:'var(--text2)',marginTop:'2px'}},sub));
+    card.appendChild(lbl);
+    card.onclick=()=>{fd.copyExisting=val;render();};
+    return card;
+  };
+  cpSec.appendChild(mkOpt(false,'⏳','انتظار الإشارات الجديدة','سينسخ فقط الصفقات التي تُفتح من الآن — الصفقات الحالية تُهمَل'));
+  cpSec.appendChild(mkOpt(true,'🪞','نسخ الصفقات الحالية الآن','سيفتح نفس صفقات الماستر الحالية بسعر السوق فوراً'));
+  form.appendChild(cpSec);
+}
+const btns=el('div',{style:{display:'flex',gap:'8px'}});const testBtn=el('button',{className:'af-btn test',onClick:()=>{if(!fd.apiKey||!fd.apiSecret){alert('أدخل API Key و Secret');return;}testBtn.textContent='⏳ يتحقق...';send('testAccount',{apiKey:fd.apiKey,apiSecret:fd.apiSecret});setTimeout(()=>testBtn.textContent='🔌 اختبار',3000);}});testBtn.textContent='🔌 اختبار';const saveBtn=el('button',{className:'af-btn save',onClick:()=>{if(!fd.name||!fd.apiKey||!fd.apiSecret){alert('أدخل كل البيانات');return;}saveBtn.textContent='⏳...';if(editing)send('updateAccount',{...editing,...fd});else send('addAccount',{...fd,isMaster:isFirst||fd.isMaster||false,copyExisting:!!fd.copyExisting});}});saveBtn.textContent='💾 حفظ';btns.appendChild(saveBtn);btns.appendChild(testBtn);if(editing)btns.appendChild(el('button',{className:'af-btn cancel',onClick:()=>{showForm=false;formAccId=null;render();}},'✕'));form.appendChild(btns);return form;}
 function render(){
   // حفظ موقع الـ scroll
   const scrollY=window.scrollY;
   const root=document.getElementById('root');if(needsSetup()){root.innerHTML='';root.appendChild(rServerSetup());return;}if(!C.loggedIn){root.innerHTML='';root.appendChild(rLogin());return;}const ae=document.activeElement;const typing=ae&&(ae.tagName==='INPUT'||ae.tagName==='SELECT'||ae.tagName==='TEXTAREA');if(typing&&C.page==='dashboard'&&root.querySelector('.dash-hdr')){const st=getStats();const sv=root.querySelectorAll('.sval');if(sv.length>=5){sv[0].textContent=st.ob;sv[1].textContent=st.os;sv[2].textContent=st.conf;sv[3].textContent=st.trail;sv[4].textContent=st.total;}if(C.progress>0){const pb=root.querySelector('.prog-bar');if(pb){const pf=pb.querySelector('.prog-fill');if(pf)pf.style.width=C.progress+'%';}}const grid=root.querySelector('.grid');if(grid){const list=getList();const ng=el('div',{className:'grid'});list.forEach(sym=>{const c=rCard(sym);if(c)ng.appendChild(c);});grid.parentNode.replaceChild(ng,grid);}const ot=root.querySelector('.toast');const nt=rToast();if(ot&&nt)ot.parentNode.replaceChild(nt,ot);else if(ot&&!nt)ot.remove();else if(!ot&&nt)root.appendChild(nt);return;}
 root.innerHTML='';root.appendChild(rNav());
+// عرض popup التقرير فوق الصفحة الحالية
+if(reportAccId){const racc=C.accounts.find(a=>a.id===reportAccId);if(racc){const pop=rReportPopup(racc);document.body.appendChild(pop);}}
 if(C.page==='settings'){root.appendChild(rSettingsPage());const t=rToast();if(t)root.appendChild(t);return;}
 if(C.page==='subscribers'){root.appendChild(rSubPage());const t=rToast();if(t)root.appendChild(t);return;}
 const st=getStats();root.appendChild(rDashHdr(st));
