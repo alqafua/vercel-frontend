@@ -580,16 +580,9 @@ const bakSec=S('💾 تصدير واستعادة البيانات');
 const bakGrid=el('div',{style:{display:'flex',gap:'10px',flexWrap:'wrap',marginTop:'8px'}});
 const expBtn=el('button',{className:'btn',style:{flex:'1',padding:'12px',background:'rgba(46,213,115,.12)',borderColor:'var(--green)',color:'var(--green)',fontWeight:'800',fontSize:'13px'}});
 expBtn.textContent='📥 تصدير';
-expBtn.onclick=async()=>{
-  try{
-    showNotif('⏳ جاري التصدير...',1500);
-    const r=await fetch(getApiUrl('/api/export'),{headers:{'Authorization':'Bearer '+(C.token||localStorage.getItem('rsi_token')||'')}});
-    if(!r.ok)throw new Error('فشل الاتصال');
-    const data=await r.json();
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='نسخه احياطيه.json';a.click();
-    showNotif('✅ تم التصدير');
-  }catch(e){showNotif('❌ '+e.message);}
+expBtn.onclick=()=>{
+  const token=encodeURIComponent(C.token||localStorage.getItem('rsi_token')||'');
+  window.open(getApiUrl('/api/export?token='+token),'_blank');
 };
 const impInput=el('input',{type:'file',accept:'.json',style:{display:'none'}});
 impInput.onchange=async(e)=>{
