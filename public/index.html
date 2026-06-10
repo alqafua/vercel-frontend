@@ -18,7 +18,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .login-btn{background:linear-gradient(135deg,var(--accent),#0077ff);color:#000;font-weight:800;border:none;border-radius:10px;padding:13px;font-size:15px;cursor:pointer}.login-err{color:var(--red);font-size:12px;font-weight:600;min-height:16px}
 .navbar{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:stretch;position:sticky;top:0;z-index:200;height:48px;overflow-x:auto}
 .ntab{background:none;border:none;border-bottom:3px solid transparent;color:var(--text2);padding:0 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
-.ntab:hover{color:var(--text);background:rgba(255,255,255,.03)}.ntab.t-dash{color:var(--accent);border-bottom-color:var(--accent)}.ntab.t-sub{color:var(--green);border-bottom-color:var(--green)}.ntab.t-set{color:var(--orange);border-bottom-color:var(--orange)}
+.ntab:hover{color:var(--text);background:rgba(255,255,255,.03)}.ntab.t-dash{color:var(--accent);border-bottom-color:var(--accent)}.ntab.t-sub{color:var(--green);border-bottom-color:var(--green)}.ntab.t-set{color:var(--orange);border-bottom-color:var(--orange)}.ntab.t-bt{color:var(--purple);border-bottom-color:var(--purple)}
 .nbadge{background:var(--green);color:#000;border-radius:8px;font-size:9px;padding:1px 6px;font-weight:800}
 .nav-right{margin-right:auto;display:flex;align-items:center;gap:8px;padding:0 12px;flex-shrink:0}
 .copy-pill{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid;transition:all .2s;white-space:nowrap}
@@ -120,7 +120,10 @@ function getServerUrl(){return(localStorage.getItem('rsi_server')||'').replace(/
 function getApiUrl(p){const b=getServerUrl();return b?b+p:p;}
 function getWsUrl(){const b=getServerUrl();const base=b?b.replace('https://','wss://').replace('http://','ws://'):(location.protocol==='https:'?'wss':'ws')+'://'+location.host;return base+'?token='+(C.token||localStorage.getItem('rsi_token')||'');}
 function needsSetup(){return(location.hostname.includes('vercel.app')||location.hostname.includes('vercel.sh'))&&localStorage.getItem('rsi_server')===null;}
-const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{}};
+const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btRunning:false,btOptimizing:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
+const BT_TFS=['5m','30m','1h','4h'];
+const REV_LOOKBACK=5, REV_THRESHOLD=3;
+const BT_OPT_FIELDS=['interval','mode','maPeriod','revMode','revCount','enableDiv','sigQueueFilters','trSon','trLon','trSstart','trSgap','trLstart','trLgap','ema200FilterOn','stFilterOn','cxTP1','cxSLon','cxSL','cxTP2on','cxTP2','cxEntry2on','cxEntry2Dist','cxTrailTp','cxTrailPct','cxLev'];
 let settingsTab='cornix',showForm=false,formAccId=null,showLog=false,showDCA=false,dcaSym='',dcaSide='LONG';
 let showManualOrder=false,manualOrderAccId=null,reportAccId=null;
 let fd={name:'',apiKey:'',apiSecret:'',sizeRatio:'1',tag:'personal',isMaster:false,copyExisting:false};
@@ -297,6 +300,20 @@ function handleServerMsg(msg){
     case 'importDone':showNotif('✅ تمت الاستعادة — ستُحدَّث البيانات');break;
     case 'ema200':C.ema200=msg.data;updateEMA200Lamp();return;
     case 'superTrend':C.superTrend=msg.data;updateSuperTrendLamp();return;
+    case 'btInfo':C.btInfo=msg.data;needRender=true;break;
+    case 'btProgress':
+      C.btProgress=msg.data;
+      if(msg.data.phase==='busy'){C.btDownloading=false;C.btOptimizing=false;showNotif('⏳ هناك عملية شغّالة بالفعل');needRender=true;break;}
+      if(msg.data.phase==='stopping')return;
+      if(C.page==='backtest'&&updateBtProgress())return;
+      needRender=true;break;
+    case 'btDownloadDone':
+      C.btDownloading=false;C.btProgress=null;
+      showNotif(msg.data.ok?'✅ اكتمل تنزيل البيانات':'❌ '+(msg.data.error||'فشل التنزيل'));
+      send('btInfo',{});
+      needRender=true;break;
+    case 'btResult':C.btRunning=false;C.btResult=msg.data;needRender=true;break;
+    case 'btOptDone':C.btOptimizing=false;C.btProgress=null;C.btOptResult=msg.data;needRender=true;break;
   }
   if(needRender)schedRender();
 }
@@ -510,7 +527,7 @@ function rSysStatusPill(){
   else{pill.textContent='✅ يعمل';}
   return pill;
 }
-function rNav(){const nav=el('div',{className:'navbar'});nav.appendChild(el('button',{className:'ntab '+(C.page==='dashboard'?'t-dash':''),onClick:()=>{C.page='dashboard';render();}},'📊 الداشبورد'));const sb=el('button',{className:'ntab '+(C.page==='subscribers'?'t-sub':''),onClick:()=>{C.page='subscribers';render();}});sb.appendChild(document.createTextNode('🪞 المشتركون'));if(C.accounts.length)sb.appendChild(el('span',{className:'nbadge'},String(C.accounts.length)));if(C.waitQueue&&C.waitQueue.length)sb.appendChild(el('span',{className:'nbadge',style:{background:'var(--orange)',marginRight:'2px'}},String(C.waitQueue.length)));nav.appendChild(sb);nav.appendChild(el('button',{className:'ntab '+(C.page==='settings'?'t-set':''),onClick:()=>{C.page='settings';render();}},'⚙️ الإعدادات'));const nr=el('div',{className:'nav-right'});const pill=el('div',{className:'copy-pill '+(C.copyOn?'on':'off'),onClick:()=>send('toggleCopy')});pill.appendChild(el('span',{className:'cpd '+(C.copyOn?'on':'off')}));pill.appendChild(document.createTextNode(C.copyOn?'نشط':'Copy'));nr.appendChild(pill);nr.appendChild(el('span',{className:'ws-ind '+(C.wsConn?'on':'off')},C.wsConn?'🟢 متصل':'🔴 منقطع'));nav.appendChild(nr);return nav;}
+function rNav(){const nav=el('div',{className:'navbar'});nav.appendChild(el('button',{className:'ntab '+(C.page==='dashboard'?'t-dash':''),onClick:()=>{C.page='dashboard';render();}},'📊 الداشبورد'));const sb=el('button',{className:'ntab '+(C.page==='subscribers'?'t-sub':''),onClick:()=>{C.page='subscribers';render();}});sb.appendChild(document.createTextNode('🪞 المشتركون'));if(C.accounts.length)sb.appendChild(el('span',{className:'nbadge'},String(C.accounts.length)));if(C.waitQueue&&C.waitQueue.length)sb.appendChild(el('span',{className:'nbadge',style:{background:'var(--orange)',marginRight:'2px'}},String(C.waitQueue.length)));nav.appendChild(sb);nav.appendChild(el('button',{className:'ntab '+(C.page==='backtest'?'t-bt':''),onClick:()=>{C.page='backtest';send('btInfo',{});render();}},'🔬 Backtest'));nav.appendChild(el('button',{className:'ntab '+(C.page==='settings'?'t-set':''),onClick:()=>{C.page='settings';render();}},'⚙️ الإعدادات'));const nr=el('div',{className:'nav-right'});const pill=el('div',{className:'copy-pill '+(C.copyOn?'on':'off'),onClick:()=>send('toggleCopy')});pill.appendChild(el('span',{className:'cpd '+(C.copyOn?'on':'off')}));pill.appendChild(document.createTextNode(C.copyOn?'نشط':'Copy'));nr.appendChild(pill);nr.appendChild(el('span',{className:'ws-ind '+(C.wsConn?'on':'off')},C.wsConn?'🟢 متصل':'🔴 منقطع'));nav.appendChild(nr);return nav;}
 function rSettingsPage(){const page=el('div',{className:'set-page'});page.appendChild(el('div',{className:'set-title'},'⚙️ الإعدادات'));const tabs=el('div',{className:'set-tabs'});[['cornix','⚙️ Cornix'],['telegram','📤 تلغرام'],['trailing','🟣 Trailing RSI'],['liquidity','💧 السيولة'],['scanner','🔍 السكانر']].forEach(([k,lb])=>{tabs.appendChild(el('button',{className:'set-tab '+(settingsTab===k?'active':''),onClick:()=>{settingsTab=k;render();}},lb));});page.appendChild(tabs);
 const S=(t)=>{const s=el('div',{className:'set-section'});s.appendChild(el('div',{className:'set-sec-title'},t));return s;};
 const G=()=>el('div',{className:'set-grid'});
@@ -868,6 +885,303 @@ if(!isFirst&&!editing&&C.accounts.some(a=>a.isMaster)){
   form.appendChild(cpSec);
 }
 const btns=el('div',{style:{display:'flex',gap:'8px'}});const testBtn=el('button',{className:'af-btn test',onClick:()=>{if(!fd.apiKey||!fd.apiSecret){alert('أدخل API Key و Secret');return;}testBtn.textContent='⏳ يتحقق...';send('testAccount',{apiKey:fd.apiKey,apiSecret:fd.apiSecret});setTimeout(()=>testBtn.textContent='🔌 اختبار',3000);}});testBtn.textContent='🔌 اختبار';const saveBtn=el('button',{className:'af-btn save',onClick:()=>{if(!fd.name||!fd.apiKey||!fd.apiSecret){alert('أدخل كل البيانات');return;}saveBtn.textContent='⏳...';if(editing)send('updateAccount',{...editing,...fd});else send('addAccount',{...fd,isMaster:isFirst||fd.isMaster||false,copyExisting:!!fd.copyExisting});}});saveBtn.textContent='💾 حفظ';btns.appendChild(saveBtn);btns.appendChild(testBtn);if(editing)btns.appendChild(el('button',{className:'af-btn cancel',onClick:()=>{showForm=false;formAccId=null;render();}},'✕'));form.appendChild(btns);return form;}
+
+// ══════════════ Backtest & المُحسِّن ══════════════
+function fmtTime(ms){if(!ms||ms<0)return '—';const s=Math.round(ms/1000);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60;return (h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(ss).padStart(2,'0');}
+function drawBtEquity(canvas,eq){const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height,n=eq.length;ctx.clearRect(0,0,W,H);if(n<2)return;const mn=Math.min(...eq),mx=Math.max(...eq),rng=(mx-mn)||1;ctx.beginPath();ctx.lineWidth=2;ctx.strokeStyle=eq[n-1]>=eq[0]?'#2ed573':'#ff4757';eq.forEach((v,i)=>{const x=i/(n-1)*W,y=H-((v-mn)/rng)*(H-10)-5;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();}
+function downloadBtBackup(optSet){
+  if(!optSet){showNotif('❌ لا يوجد إعداد للتحميل');return;}
+  const merged={...(C.btBaseSettings||C.settings||{})};
+  BT_OPT_FIELDS.forEach(k=>{if(optSet[k]!==undefined)merged[k]=optSet[k];});
+  const payload={settings:merged,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='افضل-اعداد-باكتيست.json';a.click();
+}
+function updateBtProgress(){
+  const p=C.btProgress;if(!p)return false;
+  if(p.kind==='download'){
+    const fill=document.getElementById('bt-dl-fill'),txt=document.getElementById('bt-dl-txt');
+    if(!fill||!txt)return false;
+    const pct=p.totalUnits?Math.round(p.doneUnits/p.totalUnits*100):0;
+    fill.style.width=pct+'%';
+    txt.textContent=`${p.doneUnits}/${p.totalUnits} — ${p.sym||''} ${p.tf||''} ${p.candles!=null?'('+p.candles+' شمعة)':''} ${p.error?'⚠️'+p.error:''}`;
+    return true;
+  }
+  if(p.kind==='optimize'){
+    const fill=document.getElementById('bt-opt-fill');if(!fill)return false;
+    const pct=p.total?(p.done/p.total*100):0;
+    fill.style.width=pct.toFixed(1)+'%';
+    const pctEl=document.getElementById('bt-opt-pct');if(pctEl)pctEl.textContent=pct.toFixed(1)+'%';
+    const elEl=document.getElementById('bt-opt-elapsed');if(elEl)elEl.textContent=fmtTime(p.elapsedMs);
+    const etaEl=document.getElementById('bt-opt-eta');if(etaEl)etaEl.textContent=fmtTime(p.etaMs);
+    const cntEl=document.getElementById('bt-opt-count');if(cntEl)cntEl.textContent=`قُيِّم ${p.evaluated||0} توليفة من ${p.total||0}`;
+    const liveEl=document.getElementById('bt-opt-live');
+    if(liveEl&&p.best&&p.best.metrics)liveEl.textContent=`أفضل حتى الآن: عائد ${p.best.metrics.netReturnPct}% · نجاح ${p.best.metrics.winRate}% · صفقات ${p.best.metrics.trades}`;
+    return true;
+  }
+  return false;
+}
+function rBacktestPage(){
+  const page=el('div',{className:'set-page'});
+  page.appendChild(el('div',{className:'set-title'},'🔬 Backtest & المُحسِّن'));
+  const S=(t)=>{const s=el('div',{className:'set-section'});s.appendChild(el('div',{className:'set-sec-title'},t));return s;};
+  const G=()=>el('div',{className:'set-grid'});
+  const info=C.btInfo||{stored:{},symbolsScanned:0,busy:false};
+  const busy=info.busy;
+
+  // ── 1) البيانات ──
+  const s1=S('📥 البيانات');
+  const infoBox=el('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'10px'}});
+  BT_TFS.forEach(tf=>infoBox.appendChild(el('span',{style:{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:'20px',padding:'4px 12px',fontSize:'12px'}},tf+': '+(info.stored[tf]||0)+' عملة')));
+  s1.appendChild(infoBox);
+  s1.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'10px'}},'السكانر يفحص حالياً '+(info.symbolsScanned||0)+' عملة'));
+  const dGrid=G();
+  const daysF=el('div',{className:'set-field'});daysF.appendChild(el('label',{},'عمق التاريخ (أيام)'));
+  const daysI=el('input',{type:'number',value:String(C.btDays||90),min:'7',max:'730'});
+  daysI.onchange=()=>C.btDays=parseInt(daysI.value)||90;
+  daysF.appendChild(daysI);dGrid.appendChild(daysF);s1.appendChild(dGrid);
+  s1.appendChild(el('div',{className:'set-info'},'⚠️ كل العملات × 4 فريمات قد يستغرق دقائق طويلة ويُنزَّل مرة واحدة. الفريمات الصغيرة (5m) أثقل.'));
+  const dlBtn=el('button',{className:'set-save-btn',style:{marginTop:'10px'}});
+  dlBtn.disabled=!!(busy||C.btDownloading);
+  dlBtn.textContent=C.btDownloading?'⏳ جارٍ التنزيل...':(busy?'⏳ عملية أخرى تعمل...':'⬇️ تنزيل / تحديث البيانات');
+  dlBtn.onclick=()=>{
+    if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
+    C.btDownloading=true;C.btProgress={kind:'download',doneUnits:0,totalUnits:0};
+    send('btDownload',{days:parseInt(daysI.value)||90});render();
+  };
+  s1.appendChild(dlBtn);
+  if(C.btProgress?.kind==='download'){
+    const p=C.btProgress;const pct=p.totalUnits?Math.round(p.doneUnits/p.totalUnits*100):0;
+    const dlProg=el('div',{style:{marginTop:'10px'}});
+    const dlBar=el('div',{className:'prog-bar',style:{height:'8px',borderRadius:'4px',overflow:'hidden'}});
+    const dlFill=el('div',{id:'bt-dl-fill',className:'prog-fill',style:{width:pct+'%'}});
+    dlBar.appendChild(dlFill);dlProg.appendChild(dlBar);
+    dlProg.appendChild(el('div',{id:'bt-dl-txt',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px'}},`${p.doneUnits}/${p.totalUnits} — ${p.sym||''} ${p.tf||''} ${p.candles!=null?'('+p.candles+' شمعة)':''} ${p.error?'⚠️'+p.error:''}`));
+    s1.appendChild(dlProg);
+  }
+  // تصدير/استيراد بيانات الباك تيست
+  const exGrid=el('div',{style:{display:'flex',gap:'10px',flexWrap:'wrap',marginTop:'14px'}});
+  const exBtn=el('button',{className:'btn',style:{flex:'1',padding:'12px',background:'rgba(46,213,115,.12)',borderColor:'var(--green)',color:'var(--green)',fontWeight:'800',fontSize:'13px'}});
+  exBtn.textContent='📥 تنزيل بيانات الباك تيست';
+  exBtn.onclick=()=>{const token=encodeURIComponent(C.token||localStorage.getItem('rsi_token')||'');window.open(getApiUrl('/api/backtest/export?token='+token),'_blank');};
+  const impInput=el('input',{type:'file',accept:'.bin,application/octet-stream',style:{display:'none'}});
+  impInput.onchange=async(e)=>{
+    const file=e.target.files[0];if(!file)return;
+    if(!confirm('⚠️ سيُضاف/يُستبدل بيانات الباك تيست المخزّنة بالملف. متابعة؟')){impInput.value='';return;}
+    try{
+      const buf=await file.arrayBuffer();
+      const token=C.token||localStorage.getItem('rsi_token')||'';
+      const r=await fetch(getApiUrl('/api/backtest/import'),{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/octet-stream'},body:buf});
+      const d=await r.json();
+      if(d.ok){showNotif('✅ تم استيراد '+d.count+' ملف');send('btInfo',{});}
+      else showNotif('❌ '+(d.error||'فشل الاستيراد'));
+    }catch(err){showNotif('❌ '+err.message);}
+    impInput.value='';
+  };
+  const imBtn=el('button',{className:'btn',style:{flex:'1',padding:'12px',background:'rgba(61,159,255,.12)',borderColor:'var(--blue)',color:'var(--blue)',fontWeight:'800',fontSize:'13px'}});
+  imBtn.textContent='📤 رفع بيانات الباك تيست';
+  imBtn.onclick=()=>impInput.click();
+  exGrid.appendChild(exBtn);exGrid.appendChild(imBtn);exGrid.appendChild(impInput);
+  s1.appendChild(exGrid);
+  s1.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',lineHeight:'1.6'}},'حمّل بيانات الشموع المخزّنة لحفظها على هاتفك، وارفعها لاحقاً بدل إعادة التنزيل من الإنترنت.'));
+  page.appendChild(s1);
+
+  // ── 2) باك تيست فردي ──
+  const s2=S('▶️ باك تيست بإعداداتك');
+  const BS=C.btSettings;
+  const BF=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'number',value:String(BS[key]),...ex});i.onchange=()=>{BS[key]=parseFloat(i.value)||0;};f.appendChild(i);return f;};
+  const BFS=(label,key,opts)=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const sl=el('select',{});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(String(BS[key])===v)o.setAttribute('selected','');sl.appendChild(o);});sl.onchange=()=>{BS[key]=sl.value;render();};f.appendChild(sl);return f;};
+  const BTOG=(title,key)=>{const on=!!BS[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{BS[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));row.appendChild(lbl);return row;};
+  const g2=G();
+  g2.appendChild(BFS('الفريم','interval',[['5m','5 دقائق'],['30m','30 دقيقة'],['1h','ساعة'],['4h','4 ساعات']]));
+  g2.appendChild(BFS('المؤشر','mode',[['RSI','📈 RSI خام'],['SMA','🔮 SMA'],['EMA','⚡ EMA']]));
+  if(BS.mode!=='RSI')g2.appendChild(BF('فترة MA','maPeriod',{min:'2',max:'50',step:'1'}));
+  g2.appendChild(BF('الرافعة','cxLev',{min:'1',max:'125',step:'1'}));
+  g2.appendChild(BF('TP1 %','cxTP1',{step:'0.1',min:'0.1'}));
+  g2.appendChild(BF('TP1 كمية %','cxTP1Amt',{step:'1',min:'1',max:'100'}));
+  g2.appendChild(BF('SL %','cxSL',{step:'0.1',min:'0.1'}));
+  g2.appendChild(BF('دخول2 مسافة %','cxEntry2Dist',{step:'0.1',min:'0.1'}));
+  s2.appendChild(g2);
+  const togGrid=G();
+  togGrid.appendChild(BTOG('وقف خسارة','cxSLon'));
+  togGrid.appendChild(BTOG('هدف ثانٍ','cxTP2on'));
+  togGrid.appendChild(BTOG('دخول ثانٍ','cxEntry2on'));
+  togGrid.appendChild(BTOG('دايفرجنس','enableDiv'));
+  togGrid.appendChild(BTOG('فلتر EMA200','ema200FilterOn'));
+  togGrid.appendChild(BTOG('فلتر SuperTrend','stFilterOn'));
+  s2.appendChild(togGrid);
+  const runBtn=el('button',{className:'set-save-btn',style:{marginTop:'14px'}});
+  runBtn.disabled=!!C.btRunning;
+  runBtn.textContent=C.btRunning?'⏳ يحسب...':'▶️ شغّل الباك تيست';
+  runBtn.onclick=()=>{
+    if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
+    C.btRunning=true;C.btResult=null;
+    send('btRun',{settings:{...BS}});render();
+  };
+  s2.appendChild(runBtn);
+  if(C.btResult){
+    if(C.btResult.error){
+      s2.appendChild(el('div',{className:'errbdg',style:{marginTop:'12px'}},'❌ '+C.btResult.error));
+    }else{
+      const x=C.btResult.metrics;
+      const stG=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'14px'}});
+      const mkS=(lb,v,c='')=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v '+c},String(v)));return c2;};
+      stG.appendChild(mkS('العائد',x.netReturnPct+'%',x.netReturnPct>=0?'c-green':'c-red'));
+      stG.appendChild(mkS('نسبة النجاح',x.winRate+'%'));
+      stG.appendChild(mkS('صفقات',String(x.trades)));
+      stG.appendChild(mkS('Profit Factor',String(x.profitFactor)));
+      stG.appendChild(mkS('أقصى تراجع',x.maxDrawdownPct+'%','c-red'));
+      stG.appendChild(mkS('متوسط/صفقة',x.avgPnlPct+'%',x.avgPnlPct>=0?'c-green':'c-red'));
+      s2.appendChild(stG);
+      const canvas=el('canvas',{width:'700',height:'90',style:{width:'100%',height:'90px',display:'block',marginTop:'10px'}});
+      drawBtEquity(canvas,x.equity||[1]);
+      s2.appendChild(canvas);
+
+      // ── جداول احترام المؤشر وأقوى الانعكاسات لكل عملة ──
+      const symEntries=Object.entries(C.btResult.signalStats||{});
+      if(symEntries.length){
+        const td=(v,cl='')=>el('td',{className:cl,style:{padding:'6px 4px',borderBottom:'1px solid var(--border)',textAlign:'center'}},String(v));
+        const th=(h)=>el('th',{style:{padding:'6px 4px',borderBottom:'1px solid var(--border)',color:'var(--text2)',fontWeight:'700',position:'sticky',top:'0',background:'var(--bg2)'}},h);
+        const mkTable=(title,headers,rows)=>{
+          s2.appendChild(el('div',{className:'set-sec-title',style:{marginTop:'14px',border:'none',paddingBottom:'0'}},title));
+          const wrap=el('div',{style:{overflowX:'auto',maxHeight:'260px',overflowY:'auto'}});
+          const tbl=el('table',{style:{width:'100%',borderCollapse:'collapse',fontSize:'11px'}});
+          const head=el('tr');headers.forEach(h=>head.appendChild(th(h)));tbl.appendChild(head);
+          rows.forEach(r=>tbl.appendChild(r));
+          wrap.appendChild(tbl);s2.appendChild(wrap);
+        };
+
+        const byRespect=[...symEntries].sort((a,b)=>b[1].respectRate-a[1].respectRate);
+        mkTable('🎯 احترام المؤشر (انعكاس ≥'+REV_THRESHOLD+'% خلال '+REV_LOOKBACK+' شموع)',
+          ['#','العملة','إشارات','احترمت','ما احترمت','النسبة'],
+          byRespect.map(([sym,st],i)=>{
+            const row=el('tr');
+            row.appendChild(td(i+1));row.appendChild(td(sym));row.appendChild(td(st.total));
+            row.appendChild(td(st.respected,'c-green'));row.appendChild(td(st.notRespected,'c-red'));
+            row.appendChild(td(st.respectRate+'%'));
+            return row;
+          }));
+
+        const byRev=[...symEntries].sort((a,b)=>b[1].avgReversalPct-a[1].avgReversalPct);
+        mkTable('⚡ أقوى الانعكاسات بعد الإشارة',
+          ['#','العملة','متوسط الانعكاس','متوسط الشموع','أقصى انعكاس','خلال شمعة'],
+          byRev.map(([sym,st],i)=>{
+            const row=el('tr');
+            row.appendChild(td(i+1));row.appendChild(td(sym));
+            row.appendChild(td(st.avgReversalPct+'%','c-green'));
+            row.appendChild(td(st.avgRespectedBars??'—'));
+            row.appendChild(td(st.maxReversalPct+'%','c-green'));
+            row.appendChild(td(st.maxReversalBars));
+            return row;
+          }));
+      }
+    }
+  }
+  page.appendChild(s2);
+
+  // ── 3) المُحسِّن التلقائي ──
+  const s3=S('🤖 الفحص التلقائي لأفضل إعداد');
+  s3.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'10px'}},'يجرّب كل التوليفات (المؤشر + الإدارة + الفلاتر + الفريم) ويختار الأفضل للفترة المخزّنة.'));
+  s3.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'4px'}},'📤 (اختياري) ارفع نسختك الحالية كأساس — يُعدَّل عليها فقط حقول الفحص'));
+  const baseInput=el('input',{type:'file',accept:'.json,application/json'});
+  baseInput.onchange=(e)=>{
+    const f=e.target.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{try{const d=JSON.parse(rd.result);C.btBaseSettings=d.settings||d;C.btBaseMsg='✅ نسختك مُحمّلة كأساس';}catch(err){C.btBaseMsg='❌ ملف غير صالح';}render();};
+    rd.readAsText(f);
+  };
+  s3.appendChild(baseInput);
+  if(C.btBaseMsg)s3.appendChild(el('div',{style:{fontSize:'11px',color:'var(--green)',marginTop:'4px'}},C.btBaseMsg));
+  const g3=G();
+  const bF=(label,key,defv,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'number',value:String(C[key]??defv),...ex});i.onchange=()=>{C[key]=parseFloat(i.value)||defv;};f.appendChild(i);return f;};
+  g3.appendChild(bF('الميزانية (ساعات)','btBudget',24,{step:'0.5',min:'0.5'}));
+  g3.appendChild(bF('أقل عدد صفقات','btMinTrades',30,{step:'1',min:'1'}));
+  s3.appendChild(g3);
+  const optBtnRow=el('div',{style:{display:'flex',gap:'8px',marginTop:'14px'}});
+  const optBtn=el('button',{className:'set-save-btn',style:{flex:'1'}});
+  optBtn.disabled=!!C.btOptimizing;
+  optBtn.textContent=C.btOptimizing?'⏳ يفحص...':'▶️ ابدأ الفحص التلقائي';
+  optBtn.onclick=()=>{
+    if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
+    if(!confirm('سيبدأ الفحص وقد يستمر ساعات. متابعة؟'))return;
+    C.btOptimizing=true;C.btOptResult=null;C.btProgress={kind:'optimize',done:0,total:0};
+    send('btOptimize',{budgetHours:C.btBudget||24,minTrades:C.btMinTrades||30});render();
+  };
+  optBtnRow.appendChild(optBtn);
+  if(C.btOptimizing){
+    const stopBtn=el('button',{className:'btn',style:{background:'rgba(255,71,87,.12)',borderColor:'var(--red)',color:'var(--red)',fontWeight:'800',padding:'0 20px'}});
+    stopBtn.textContent='⏹ إيقاف';
+    stopBtn.onclick=()=>{send('btStop',{});stopBtn.textContent='⏹ يوقف...';stopBtn.disabled=true;};
+    optBtnRow.appendChild(stopBtn);
+  }
+  s3.appendChild(optBtnRow);
+  if(C.btProgress?.kind==='optimize'){
+    const p=C.btProgress;const pct=p.total?(p.done/p.total*100):0;
+    const optProg=el('div',{style:{marginTop:'14px'}});
+    const optBar=el('div',{className:'prog-bar',style:{height:'8px',borderRadius:'4px',overflow:'hidden'}});
+    optBar.appendChild(el('div',{id:'bt-opt-fill',className:'prog-fill',style:{width:pct.toFixed(1)+'%'}}));
+    optProg.appendChild(optBar);
+    const stG3=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'8px'}});
+    const mkS3=(lb,id,v)=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v',id},v));return c2;};
+    stG3.appendChild(mkS3('مكتمل','bt-opt-pct',pct.toFixed(1)+'%'));
+    stG3.appendChild(mkS3('منقضٍ','bt-opt-elapsed',fmtTime(p.elapsedMs)));
+    stG3.appendChild(mkS3('متبقٍّ','bt-opt-eta',fmtTime(p.etaMs)));
+    optProg.appendChild(stG3);
+    optProg.appendChild(el('div',{id:'bt-opt-count',style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',textAlign:'center'}},`قُيِّم ${p.evaluated||0} توليفة من ${p.total||0}`));
+    optProg.appendChild(el('div',{id:'bt-opt-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل حتى الآن: عائد ${p.best.metrics.netReturnPct}% · نجاح ${p.best.metrics.winRate}% · صفقات ${p.best.metrics.trades}`:''));
+    s3.appendChild(optProg);
+  }
+  if(C.btOptResult){
+    if(C.btOptResult.error){
+      s3.appendChild(el('div',{className:'errbdg',style:{marginTop:'12px'}},'❌ '+C.btOptResult.error));
+    }else if(!C.btOptResult.best){
+      s3.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginTop:'12px',textAlign:'center'}},'لا توجد نتيجة تحقق الحد الأدنى للصفقات.'));
+    }else{
+      const b=C.btOptResult.best,c=b.combo,m=b.metrics;
+      const bestBox=el('div',{style:{background:'var(--bg3)',borderRadius:'12px',padding:'14px',marginTop:'14px'}});
+      bestBox.appendChild(el('div',{style:{fontWeight:'800',color:'var(--accent)',marginBottom:'8px'}},'⭐ الإعداد الأفضل'));
+      bestBox.appendChild(el('div',{style:{fontSize:'12px',lineHeight:'1.8'}},`الفريم: ${c.interval} · المؤشر: ${c.mode}${c.mode!=='RSI'?'('+c.maPeriod+')':''} · إشارات: ${c.sigPreset} · فلتر: ${c.regime}`));
+      bestBox.appendChild(el('div',{style:{fontSize:'12px',marginTop:'4px'}},`TP1: ${c.cxTP1}% · SL: ${c.sl[1]}% · TP2: ${c.tp2[0]==='on'?c.tp2[1]+'%':'—'} · دخول2: ${c.entry2[0]==='on'?c.entry2[1]+'%':'—'} · رافعة: ${c.cxLev}x`));
+      const stG2=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'10px'}});
+      const mkS2=(lb,v,cl='')=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v '+cl},String(v)));return c2;};
+      stG2.appendChild(mkS2('عائد',m.netReturnPct+'%',m.netReturnPct>=0?'c-green':'c-red'));
+      stG2.appendChild(mkS2('نجاح',m.winRate+'%'));
+      stG2.appendChild(mkS2('صفقات',String(m.trades)));
+      stG2.appendChild(mkS2('PF',String(m.profitFactor)));
+      stG2.appendChild(mkS2('تراجع',m.maxDrawdownPct+'%','c-red'));
+      stG2.appendChild(mkS2('النقاط',String(b.score)));
+      bestBox.appendChild(stG2);
+      bestBox.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px'}},`✅ أُرسلت لتلغرام أيضاً. قُيِّم ${C.btOptResult.evaluated} توليفة في ${fmtTime(C.btOptResult.elapsedMs)}.`));
+      s3.appendChild(bestBox);
+      const expBestBtn=el('button',{className:'btn',style:{width:'100%',marginTop:'10px',padding:'12px',background:'rgba(46,213,115,.12)',borderColor:'var(--green)',color:'var(--green)',fontWeight:'800'}});
+      expBestBtn.textContent='⬇️ حمّل أفضل إعداد كنسخة احتياطية (إعدادات فقط)';
+      expBestBtn.onclick=()=>downloadBtBackup(b.settings);
+      s3.appendChild(expBestBtn);
+      s3.appendChild(el('div',{className:'set-info',style:{marginTop:'10px'}},'⚠️ هذه أفضل نتيجة على البيانات الماضية — لا تضمن المستقبل (Overfitting). جرّبها بحذر وعلى رأس مال صغير أولاً.'));
+      if(C.btOptResult.leaderboard?.length){
+        s3.appendChild(el('div',{className:'set-sec-title',style:{marginTop:'14px',border:'none',paddingBottom:'0'}},'🏆 أفضل 10'));
+        const lbWrap=el('div',{style:{overflowX:'auto'}});
+        const tbl=el('table',{style:{width:'100%',borderCollapse:'collapse',fontSize:'11px'}});
+        const thead=el('tr');
+        ['#','فريم','مؤشر','إشارة','TP/SL','عائد','نجاح','صفقات','تراجع'].forEach(h=>thead.appendChild(el('th',{style:{padding:'6px 4px',borderBottom:'1px solid var(--border)',color:'var(--text2)',fontWeight:'700'}},h)));
+        tbl.appendChild(thead);
+        const td=(v,cl='')=>el('td',{className:cl,style:{padding:'6px 4px',borderBottom:'1px solid var(--border)',textAlign:'center'}},String(v));
+        C.btOptResult.leaderboard.forEach((it,i)=>{
+          const e=it.combo,m2=it.metrics;
+          const row=el('tr');
+          row.appendChild(td(i+1));row.appendChild(td(e.interval));row.appendChild(td(e.mode));row.appendChild(td(e.sigPreset));
+          row.appendChild(td(e.cxTP1+'/'+e.sl[1]));
+          row.appendChild(td(m2.netReturnPct+'%',m2.netReturnPct>=0?'c-green':'c-red'));
+          row.appendChild(td(m2.winRate+'%'));row.appendChild(td(m2.trades));row.appendChild(td(m2.maxDrawdownPct+'%','c-red'));
+          tbl.appendChild(row);
+        });
+        lbWrap.appendChild(tbl);s3.appendChild(lbWrap);
+      }
+    }
+  }
+  page.appendChild(s3);
+  return page;
+}
 function render(){
   // حفظ موقع الـ scroll
   const scrollY=window.scrollY;
@@ -877,6 +1191,7 @@ root.innerHTML='';root.appendChild(rNav());
 if(reportAccId){const racc=C.accounts.find(a=>a.id===reportAccId);if(racc){const pop=rReportPopup(racc);document.body.appendChild(pop);}}
 if(C.page==='settings'){root.appendChild(rSettingsPage());const t=rToast();if(t)root.appendChild(t);return;}
 if(C.page==='subscribers'){root.appendChild(rSubPage());const t=rToast();if(t)root.appendChild(t);return;}
+if(C.page==='backtest'){root.appendChild(rBacktestPage());const t=rToast();if(t)root.appendChild(t);return;}
 const st=getStats();root.appendChild(rDashHdr(st));
 const asb=el('div',{className:'as-bar '+(C.settings.autoSend?'on':'off'),onClick:()=>sendSettings({autoSend:!C.settings.autoSend})});asb.appendChild(el('span',{className:'asdot '+(C.settings.autoSend?'on':'off')}));asb.appendChild(document.createTextNode(C.settings.autoSend?'🟢 الإرسال التلقائي: تشغيل':'🔴 الإرسال متوقف'));root.appendChild(asb);
 if(C.waitQueue&&C.waitQueue.length){
