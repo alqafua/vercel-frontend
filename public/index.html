@@ -121,7 +121,7 @@ function getApiUrl(p){const b=getServerUrl();return b?b+p:p;}
 function getWsUrl(){const b=getServerUrl();const base=b?b.replace('https://','wss://').replace('http://','ws://'):(location.protocol==='https:'?'wss':'ws')+'://'+location.host;return base+'?token='+(C.token||localStorage.getItem('rsi_token')||'');}
 function needsSetup(){return(location.hostname.includes('vercel.app')||location.hostname.includes('vercel.sh'))&&localStorage.getItem('rsi_server')===null;}
 const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
-const BT_TFS=['5m','30m','1h','4h'];
+const BT_TFS=['1h','4h'];
 const REV_LOOKBACK=5, REV_THRESHOLD=3;
 const BT_OPT_FIELDS=['interval','mode','maPeriod','revMode','revCount','enableDiv','sigQueueFilters','trSon','trLon','trSstart','trSgap','trLstart','trLgap','ema200FilterOn','stFilterOn','cxTP1','cxSLon','cxSL','cxTP2on','cxTP2','cxEntry2on','cxEntry2Dist','cxTrailTp','cxTrailPct','cxBEon','dirFilter','cxLev'];
 let settingsTab='cornix',showForm=false,formAccId=null,showLog=false,showDCA=false,dcaSym='',dcaSide='LONG';
@@ -982,7 +982,7 @@ function rBacktestPage(){
   const daysI=el('input',{type:'number',value:String(C.btDays||90),min:'7',max:'730'});
   daysI.onchange=()=>C.btDays=parseInt(daysI.value)||90;
   daysF.appendChild(daysI);dGrid.appendChild(daysF);s1.appendChild(dGrid);
-  s1.appendChild(el('div',{className:'set-info'},'⚠️ كل العملات × 4 فريمات قد يستغرق دقائق طويلة ويُنزَّل مرة واحدة. الفريمات الصغيرة (5m) أثقل.'));
+  s1.appendChild(el('div',{className:'set-info'},'⚠️ كل العملات × فريمي الساعة و4 ساعات فقط. قد يستغرق دقائق ويُنزَّل مرة واحدة.'));
   const dlBtn=el('button',{className:'set-save-btn',style:{marginTop:'10px'}});
   dlBtn.disabled=!!(busy||C.btDownloading);
   dlBtn.textContent=C.btDownloading?'⏳ جارٍ التنزيل...':(busy?'⏳ عملية أخرى تعمل...':'⬇️ تنزيل / تحديث البيانات');
@@ -1036,7 +1036,7 @@ function rBacktestPage(){
   const BFS=(label,key,opts)=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const sl=el('select',{});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(String(BS[key])===v)o.setAttribute('selected','');sl.appendChild(o);});sl.onchange=()=>{BS[key]=sl.value;render();};f.appendChild(sl);return f;};
   const BTOG=(title,key)=>{const on=!!BS[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{BS[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));row.appendChild(lbl);return row;};
   const g2=G();
-  g2.appendChild(BFS('الفريم','interval',[['5m','5 دقائق'],['30m','30 دقيقة'],['1h','ساعة'],['4h','4 ساعات']]));
+  g2.appendChild(BFS('الفريم','interval',[['1h','ساعة'],['4h','4 ساعات']]));
   g2.appendChild(BFS('المؤشر','mode',[['RSI','📈 RSI خام'],['SMA','🔮 SMA'],['EMA','⚡ EMA']]));
   if(BS.mode!=='RSI')g2.appendChild(BF('فترة MA','maPeriod',{min:'2',max:'50',step:'1'}));
   g2.appendChild(BF('الرافعة','cxLev',{min:'1',max:'125',step:'1'}));
