@@ -114,13 +114,14 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 </head>
 <body>
 <div id="root"></div>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script>
 
 function getServerUrl(){return(localStorage.getItem('rsi_server')||'').replace(/\/$/,'');}
 function getApiUrl(p){const b=getServerUrl();return b?b+p:p;}
 function getWsUrl(){const b=getServerUrl();const base=b?b.replace('https://','wss://').replace('http://','ws://'):(location.protocol==='https:'?'wss':'ws')+'://'+location.host;return base+'?token='+(C.token||localStorage.getItem('rsi_token')||'');}
 function needsSetup(){return(location.hostname.includes('vercel.app')||location.hostname.includes('vercel.sh'))&&localStorage.getItem('rsi_server')===null;}
-const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
+const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
 const BT_TFS=['1h','4h'];
 const REV_LOOKBACK=5, REV_THRESHOLD=3;
 const BT_OPT_FIELDS=['interval','mode','maPeriod','revMode','revCount','enableDiv','sigQueueFilters','trSon','trLon','trSstart','trSgap','trLstart','trLgap','ema200FilterOn','stFilterOn','cxTP1','cxSLon','cxSL','cxTP2on','cxTP2','cxEntry2on','cxEntry2Dist','cxTrailTp','cxTrailPct','cxBEon','dirFilter','cxLev'];
@@ -315,6 +316,10 @@ function handleServerMsg(msg){
     case 'btResult':C.btRunning=false;C.btResult=msg.data;needRender=true;break;
     case 'btOptDone':C.btOptimizing=false;C.btProgress=null;C.btOptResult=msg.data;needRender=true;break;
     case 'btOptSymDone':C.btOptimizingSym=false;C.btProgress=null;C.btOptSymResult=msg.data;needRender=true;break;
+    case 'btChartDataDone':
+      C.btChartLoading=false;C.btChartData=msg.data;
+      if(msg.data.error)showNotif('❌ '+msg.data.error);
+      needRender=true;break;
   }
   if(needRender)schedRender();
 }
@@ -927,6 +932,81 @@ function downloadPerSymbolBackup(){
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='افضل-اعداد-لكل-عمله.json';a.click();
 }
+// ── شارت التحقق (يطابق TradingView): شموع + المؤشر + الإشارات + الصفقات ──
+function requestBtChart(symbol,settings,reqMeta={}){
+  C.btChartReq={...reqMeta,symbol,settings};
+  C.btChartData=null;C.btChartLoading=true;
+  send('btChartData',{symbol,settings:{...settings}});
+  render();
+  setTimeout(()=>document.getElementById('bt-chart-section')?.scrollIntoView({behavior:'smooth'}),50);
+}
+function openBtChartGeneral(it){
+  C.btChartReq={source:'general',settings:it.settings,combo:it.combo,symbol:null};
+  C.btChartData=null;C.btChartLoading=false;
+  render();
+  setTimeout(()=>document.getElementById('bt-chart-section')?.scrollIntoView({behavior:'smooth'}),50);
+}
+let _btChart=null;
+const BT_SIG_MARK={
+  a70:{position:'aboveBar',color:'#ff4757',shape:'arrowDown',text:'70↑'},
+  b70:{position:'aboveBar',color:'#ffa502',shape:'arrowDown',text:'70↓'},
+  b30:{position:'belowBar',color:'#3d9fff',shape:'arrowUp',text:'30↓'},
+  a30:{position:'belowBar',color:'#2ed573',shape:'arrowUp',text:'30↑'},
+  cl:{position:'belowBar',color:'#00e5ff',shape:'arrowUp',text:'⚡شراء'},
+  cs:{position:'aboveBar',color:'#00e5ff',shape:'arrowDown',text:'⚡بيع'},
+  ts:{position:'aboveBar',color:'#a55eea',shape:'arrowDown',text:'TS'},
+  tl:{position:'belowBar',color:'#a55eea',shape:'arrowUp',text:'TL'},
+};
+function renderBtChart(){
+  if(_btChart){try{_btChart.remove();}catch(e){}_btChart=null;}
+  const container=document.getElementById('bt-chart-candles');
+  if(!container)return;
+  const d=C.btChartData;
+  if(!d||d.error||!d.candles?.length)return;
+  const chart=LightweightCharts.createChart(container,{
+    width:container.clientWidth,height:420,
+    layout:{background:{color:'transparent'},textColor:'#8892b0'},
+    grid:{vertLines:{color:'rgba(255,255,255,.05)'},horzLines:{color:'rgba(255,255,255,.05)'}},
+    timeScale:{timeVisible:true,secondsVisible:false,borderColor:'rgba(255,255,255,.08)'},
+    rightPriceScale:{borderColor:'rgba(255,255,255,.08)'},
+  });
+  const candleSeries=chart.addCandlestickSeries({upColor:'#2ed573',downColor:'#ff4757',borderVisible:false,wickUpColor:'#2ed573',wickDownColor:'#ff4757'});
+  candleSeries.priceScale().applyOptions({scaleMargins:{top:0.05,bottom:0.25}});
+  candleSeries.setData(d.candles.map(c=>({time:Math.floor(c[0]/1000),open:c[1],high:c[2],low:c[3],close:c[4]})));
+
+  const indSeries=chart.addLineSeries({color:'#ffd32a',lineWidth:1,priceScaleId:'ind',lastValueVisible:false,priceLineVisible:false});
+  chart.priceScale('ind').applyOptions({scaleMargins:{top:0.78,bottom:0}});
+  const indData=[];
+  (d.indicator||[]).forEach((v,i)=>{if(v!=null)indData.push({time:Math.floor(d.candles[i][0]/1000),value:v});});
+  indSeries.setData(indData);
+  indSeries.createPriceLine({price:70,color:'#ff4757',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,axisLabelVisible:true,title:'70'});
+  indSeries.createPriceLine({price:30,color:'#3d9fff',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,axisLabelVisible:true,title:'30'});
+
+  const markers=[];
+  (d.signals||[]).forEach(s=>{
+    const m=BT_SIG_MARK[s.type];if(!m)return;
+    markers.push({time:Math.floor(d.candles[s.i][0]/1000),position:m.position,color:m.color,shape:m.shape,text:m.text});
+  });
+  (d.trades||[]).forEach(t=>{
+    markers.push({time:Math.floor(d.candles[t.entryIdx][0]/1000),position:t.side==='LONG'?'belowBar':'aboveBar',color:t.side==='LONG'?'#2ed573':'#ff4757',shape:t.side==='LONG'?'arrowUp':'arrowDown',text:t.side==='LONG'?'دخول لونغ':'دخول شورت'});
+    const exitColor=t.pnlPct>=0?'#2ed573':'#ff4757';
+    markers.push({time:Math.floor(d.candles[t.exitIdx][0]/1000),position:t.side==='LONG'?'aboveBar':'belowBar',color:exitColor,shape:'circle',text:`${t.exitReason} ${t.pnlPct>=0?'+':''}${t.pnlPct}%`});
+  });
+  markers.sort((a,b)=>a.time-b.time);
+  candleSeries.setMarkers(markers);
+
+  chart.timeScale().fitContent();
+  _btChart=chart;
+}
+window.addEventListener('resize',()=>{
+  if(!_btChart)return;
+  const c=document.getElementById('bt-chart-candles');
+  if(c)_btChart.applyOptions({width:c.clientWidth});
+});
+function btDlText(p){
+  if(p.phase==='wait')return `⏳ Binance ${p.status} — انتظار ${p.waitSec}ث (محاولة ${p.attempt}) — ${p.sym||''} ${p.tf||''}`;
+  return `${p.doneUnits}/${p.totalUnits} — ${p.sym||''} ${p.tf||''} ${p.candles!=null?'('+p.candles+' شمعة)':''} ${p.error?'⚠️'+p.error:''}`;
+}
 function updateBtProgress(){
   const p=C.btProgress;if(!p)return false;
   if(p.kind==='download'){
@@ -934,7 +1014,7 @@ function updateBtProgress(){
     if(!fill||!txt)return false;
     const pct=p.totalUnits?Math.round(p.doneUnits/p.totalUnits*100):0;
     fill.style.width=pct+'%';
-    txt.textContent=`${p.doneUnits}/${p.totalUnits} — ${p.sym||''} ${p.tf||''} ${p.candles!=null?'('+p.candles+' شمعة)':''} ${p.error?'⚠️'+p.error:''}`;
+    txt.textContent=btDlText(p);
     return true;
   }
   if(p.kind==='optimize'){
@@ -998,7 +1078,7 @@ function rBacktestPage(){
     const dlBar=el('div',{className:'prog-bar',style:{height:'8px',borderRadius:'4px',overflow:'hidden'}});
     const dlFill=el('div',{id:'bt-dl-fill',className:'prog-fill',style:{width:pct+'%'}});
     dlBar.appendChild(dlFill);dlProg.appendChild(dlBar);
-    dlProg.appendChild(el('div',{id:'bt-dl-txt',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px'}},`${p.doneUnits}/${p.totalUnits} — ${p.sym||''} ${p.tf||''} ${p.candles!=null?'('+p.candles+' شمعة)':''} ${p.error?'⚠️'+p.error:''}`));
+    dlProg.appendChild(el('div',{id:'bt-dl-txt',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px'}},btDlText(p)));
     s1.appendChild(dlProg);
   }
   // تصدير/استيراد بيانات الباك تيست
@@ -1244,8 +1324,9 @@ function rBacktestPage(){
           row.appendChild(td(m2.winRate+'%'));row.appendChild(td(m2.trades));row.appendChild(td(m2.maxDrawdownPct+'%','c-red'));
           const actTd=el('td',{style:{padding:'4px',borderBottom:'1px solid var(--border)',whiteSpace:'nowrap'}});
           const tryBtn=el('button',{style:{fontSize:'13px',padding:'2px 6px',marginInlineEnd:'2px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'جرّب وعدّل',onClick:()=>{applyComboToTest(it);window.scrollTo({top:0,behavior:'smooth'});}},'🧪');
-          const dlBtn=el('button',{style:{fontSize:'13px',padding:'2px 6px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'تنزيل',onClick:()=>downloadBtBackup(it.settings)},'⬇️');
-          actTd.appendChild(tryBtn);actTd.appendChild(dlBtn);
+          const dlBtn=el('button',{style:{fontSize:'13px',padding:'2px 6px',marginInlineEnd:'2px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'تنزيل',onClick:()=>downloadBtBackup(it.settings)},'⬇️');
+          const chartBtn=el('button',{style:{fontSize:'13px',padding:'2px 6px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'تحقق من الشارت',onClick:()=>openBtChartGeneral(it)},'🔍');
+          actTd.appendChild(tryBtn);actTd.appendChild(dlBtn);actTd.appendChild(chartBtn);
           row.appendChild(actTd);
           tbl.appendChild(row);
         });
@@ -1259,6 +1340,25 @@ function rBacktestPage(){
   const s4=S('🪙 أفضل إعداد لكل عملة');
   s4.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'10px',lineHeight:'1.8'}},
     'يفحص كل عملة على حدة (فريم الساعة و4 ساعات) ويضبط عتبة وفجوة Trailing RSI الخاصة بها بحيث تقع إشارة شورت (TS) عند أفضل قمة وإشارة لونغ (TL) عند أفضل قاع — بالاعتماد على متوسط الانعكاس بعد الإشارة. ثم يبحث عن أفضل إدارة صفقة (TP/SL/دخول2/Trailing TP/BE) لكل عملة. يستخدم أفضل توليفات المؤشر من نتيجة الفحص العام أعلاه.'));
+  s4.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'4px'}},'📂 (اختياري) استعد نتيجة فحص سابقة لكل عملة بدل إعادة الفحص من الصفر'));
+  const restoreInput4=el('input',{type:'file',accept:'.json,application/json'});
+  restoreInput4.onchange=(e)=>{
+    const f=e.target.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{
+      try{
+        const d=JSON.parse(rd.result);
+        if(!d.bySymbol||!Object.keys(d.bySymbol).length){showNotif('❌ ملف غير صالح — لا يحتوي نتائج لكل عملة');return;}
+        const n=Object.keys(d.bySymbol).length;
+        C.btOptSymResult={bySymbol:d.bySymbol,symbolsScanned:n,totalSymbols:n,elapsedMs:0};
+        showNotif('✅ تم استعادة نتائج '+n+' عملة');
+      }catch(err){showNotif('❌ ملف غير صالح');}
+      render();
+    };
+    rd.readAsText(f);
+  };
+  restoreInput4.onclick=(e)=>{e.target.value='';};
+  s4.appendChild(restoreInput4);
   if(!C.btOptResult?.leaderboard?.length){
     s4.appendChild(el('div',{className:'set-info'},'⚠️ شغّل «الفحص التلقائي» أعلاه أولاً، أو استعد ملف نتيجة فحص سابقة، حتى تتوفر توليفات المؤشر الأساسية لهذا الفحص.'));
   }else{
@@ -1300,7 +1400,8 @@ function rBacktestPage(){
       symProg.appendChild(el('div',{id:'bt-optsym-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل لـ${p.sym}: عائد ${p.best.metrics.netReturnPct}% · صفقات ${p.best.metrics.trades}`:''));
       s4.appendChild(symProg);
     }
-    if(C.btOptSymResult){
+  }
+  if(C.btOptSymResult){
       if(C.btOptSymResult.error){
         s4.appendChild(el('div',{className:'errbdg',style:{marginTop:'12px'}},'❌ '+C.btOptSymResult.error));
       }else{
@@ -1335,8 +1436,9 @@ function rBacktestPage(){
             row.appendChild(td4(m?m.trades:'—'));
             const actTd4=el('td',{style:{padding:'4px',borderBottom:'1px solid var(--border)',whiteSpace:'nowrap'}});
             const tryBtn4=el('button',{style:{fontSize:'13px',padding:'2px 6px',marginInlineEnd:'2px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'جرّب وعدّل',onClick:()=>{applyComboToTest(info);window.scrollTo({top:0,behavior:'smooth'});}},'🧪');
-            const dlBtn4=el('button',{style:{fontSize:'13px',padding:'2px 6px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'تنزيل',onClick:()=>downloadBtBackup(info.settings)},'⬇️');
-            actTd4.appendChild(tryBtn4);actTd4.appendChild(dlBtn4);
+            const dlBtn4=el('button',{style:{fontSize:'13px',padding:'2px 6px',marginInlineEnd:'2px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'تنزيل',onClick:()=>downloadBtBackup(info.settings)},'⬇️');
+            const chartBtn4=el('button',{style:{fontSize:'13px',padding:'2px 6px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'تحقق من الشارت',onClick:()=>requestBtChart(sym,info.settings,{source:'persymbol',combo:info.combo,score:info.score})},'🔍');
+            actTd4.appendChild(tryBtn4);actTd4.appendChild(dlBtn4);actTd4.appendChild(chartBtn4);
             row.appendChild(actTd4);
             tbl4.appendChild(row);
           });
@@ -1346,8 +1448,92 @@ function rBacktestPage(){
         }
       }
     }
-  }
   page.appendChild(s4);
+
+  // ── 5) تحقق من النتائج (شارت يطابق TradingView) ──
+  const s5=S('🔍 تحقق من النتائج (شارت)');
+  s5.id='bt-chart-section';
+  s5.appendChild(el('div',{className:'set-info'},'⏰ الأوقات هنا بتوقيت UTC — اضبط المنطقة الزمنية في TradingView على UTC (Etc/UTC) للمطابقة الدقيقة. الشموع والمؤشر والإشارات والصفقات هنا محسوبة من نفس بيانات ومنطق الباك تيست تماماً.'));
+  if(!C.btChartReq){
+    s5.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginTop:'10px',textAlign:'center'}},'اضغط 🔍 بجانب أي نتيجة في «الفحص التلقائي» أو «أفضل إعداد لكل عملة» أعلاه لعرض شارت التحقق هنا.'));
+  }else{
+    const req=C.btChartReq;
+    if(req.source==='general'){
+      const ivl=req.settings.interval;
+      const syms=(C.btInfo?.storedSymbols?.[ivl]||[]);
+      if(syms.length){
+        const pickF=el('div',{className:'set-field',style:{marginTop:'10px'}});
+        pickF.appendChild(el('label',{},'اختر عملة لعرض شارتها بهذا الإعداد'));
+        const sel=el('select',{});
+        sel.appendChild(el('option',{value:''},'— اختر عملة —'));
+        syms.forEach(s=>{const o=el('option',{value:s},s);if(req.symbol===s)o.setAttribute('selected','');sel.appendChild(o);});
+        sel.onchange=()=>{if(sel.value)requestBtChart(sel.value,req.settings,{source:'general',combo:req.combo});};
+        pickF.appendChild(sel);
+        s5.appendChild(pickF);
+      }else{
+        s5.appendChild(el('div',{className:'set-info',style:{marginTop:'10px'}},'⚠️ لا توجد عملات مخزّنة لفريم '+ivl+' — نزّل البيانات أولاً.'));
+      }
+    }
+    const c5=req.combo||{};
+    const titleParts=[];
+    if(req.symbol)titleParts.push(req.symbol);
+    titleParts.push(`${req.settings.interval} · ${req.settings.mode}${req.settings.mode!=='RSI'?'('+req.settings.maPeriod+')':''}`);
+    if(req.score!=null)titleParts.push('النقاط: '+req.score);
+    s5.appendChild(el('div',{style:{fontWeight:'800',color:'var(--accent)',marginTop:'10px'}},titleParts.join(' — ')));
+
+    if(C.btChartLoading){
+      s5.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginTop:'12px',textAlign:'center'}},'⏳ يحمّل بيانات الشارت...'));
+    }else if(C.btChartData?.error){
+      s5.appendChild(el('div',{className:'errbdg',style:{marginTop:'12px'}},'❌ '+C.btChartData.error));
+    }else if(C.btChartData&&req.symbol){
+      const chartBox=el('div',{id:'bt-chart-candles',style:{width:'100%',height:'420px',marginTop:'10px',borderRadius:'8px',overflow:'hidden',background:'var(--bg3)'}});
+      s5.appendChild(chartBox);
+      const legend=el('div',{style:{display:'flex',flexWrap:'wrap',gap:'10px',fontSize:'10px',color:'var(--text2)',marginTop:'8px'}});
+      const lg=(color,shape,text)=>{
+        const sp=el('span',{style:{display:'inline-flex',alignItems:'center',gap:'4px'}});
+        sp.appendChild(el('span',{style:{color,fontWeight:'800'}},shape));
+        sp.appendChild(document.createTextNode(text));
+        return sp;
+      };
+      legend.appendChild(lg('#ff4757','▼','تجاوز 70'));
+      legend.appendChild(lg('#ffa502','▼','نزول من 70'));
+      legend.appendChild(lg('#3d9fff','▲','نزول من 30'));
+      legend.appendChild(lg('#2ed573','▲','صعود من 30'));
+      legend.appendChild(lg('#00e5ff','◆','إشارة مؤكدة ⚡'));
+      legend.appendChild(lg('#a55eea','◆','Trailing'));
+      legend.appendChild(lg('#2ed573','●','دخول/خروج رابح'));
+      legend.appendChild(lg('#ff4757','●','دخول/خروج خاسر'));
+      s5.appendChild(legend);
+
+      const trades=C.btChartData.trades||[];
+      const cd=C.btChartData.candles;
+      if(trades.length){
+        s5.appendChild(el('div',{className:'set-sec-title',style:{marginTop:'14px',border:'none',paddingBottom:'0'}},`📋 الصفقات (${trades.length})`));
+        const wrap5=el('div',{style:{overflowX:'auto',maxHeight:'300px',overflowY:'auto'}});
+        const tbl5=el('table',{style:{width:'100%',borderCollapse:'collapse',fontSize:'11px'}});
+        const thead5=el('tr');
+        ['#','نوع','جهة','دخول (UTC)','خروج (UTC)','السبب','العائد%'].forEach(h=>thead5.appendChild(el('th',{style:{padding:'6px 4px',borderBottom:'1px solid var(--border)',color:'var(--text2)',fontWeight:'700',position:'sticky',top:'0',background:'var(--bg2)',whiteSpace:'nowrap'}},h)));
+        tbl5.appendChild(thead5);
+        const td5=(v,cl='')=>el('td',{className:cl,style:{padding:'6px 4px',borderBottom:'1px solid var(--border)',textAlign:'center',whiteSpace:'nowrap'}},String(v));
+        const fmtUTC=(ms)=>{const dt=new Date(ms);return dt.getUTCFullYear()+'-'+String(dt.getUTCMonth()+1).padStart(2,'0')+'-'+String(dt.getUTCDate()).padStart(2,'0')+' '+String(dt.getUTCHours()).padStart(2,'0')+':'+String(dt.getUTCMinutes()).padStart(2,'0');};
+        trades.forEach((t,i)=>{
+          const row=el('tr');
+          row.appendChild(td5(i+1));
+          row.appendChild(td5(t.type||'—'));
+          row.appendChild(td5(t.side==='LONG'?'🟢 لونغ':'🔴 شورت'));
+          row.appendChild(td5(fmtUTC(cd[t.entryIdx][0])));
+          row.appendChild(td5(fmtUTC(cd[t.exitIdx][0])));
+          row.appendChild(td5(t.exitReason));
+          row.appendChild(td5(t.pnlPct+'%',t.pnlPct>=0?'c-green':'c-red'));
+          tbl5.appendChild(row);
+        });
+        wrap5.appendChild(tbl5);s5.appendChild(wrap5);
+      }else{
+        s5.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginTop:'12px',textAlign:'center'}},'لا توجد صفقات لهذه العملة بهذه الإعدادات خلال الفترة المخزّنة.'));
+      }
+    }
+  }
+  page.appendChild(s5);
   return page;
 }
 function render(){
@@ -1359,7 +1545,7 @@ root.innerHTML='';root.appendChild(rNav());
 if(reportAccId){const racc=C.accounts.find(a=>a.id===reportAccId);if(racc){const pop=rReportPopup(racc);document.body.appendChild(pop);}}
 if(C.page==='settings'){root.appendChild(rSettingsPage());const t=rToast();if(t)root.appendChild(t);return;}
 if(C.page==='subscribers'){root.appendChild(rSubPage());const t=rToast();if(t)root.appendChild(t);return;}
-if(C.page==='backtest'){root.appendChild(rBacktestPage());const t=rToast();if(t)root.appendChild(t);return;}
+if(C.page==='backtest'){root.appendChild(rBacktestPage());const t=rToast();if(t)root.appendChild(t);renderBtChart();return;}
 const st=getStats();root.appendChild(rDashHdr(st));
 const asb=el('div',{className:'as-bar '+(C.settings.autoSend?'on':'off'),onClick:()=>sendSettings({autoSend:!C.settings.autoSend})});asb.appendChild(el('span',{className:'asdot '+(C.settings.autoSend?'on':'off')}));asb.appendChild(document.createTextNode(C.settings.autoSend?'🟢 الإرسال التلقائي: تشغيل':'🔴 الإرسال متوقف'));root.appendChild(asb);
 if(C.waitQueue&&C.waitQueue.length){
