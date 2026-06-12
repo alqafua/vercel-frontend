@@ -933,15 +933,18 @@ function downloadPerSymbolBackup(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='افضل-اعداد-لكل-عمله.json';a.click();
 }
 // ── شارت التحقق (يطابق TradingView): شموع + المؤشر + الإشارات + الصفقات ──
+function cloneBtSettings(settings){
+  return {...settings, sigQueueFilters:{...(settings.sigQueueFilters||{})}};
+}
 function requestBtChart(symbol,settings,reqMeta={}){
-  C.btChartReq={...reqMeta,symbol,settings};
+  C.btChartReq={...reqMeta,symbol,settings:cloneBtSettings(settings)};
   C.btChartData=null;C.btChartLoading=true;
-  send('btSymChartData',{symbol,settings:{...settings}});
+  send('btSymChartData',{symbol,settings:{...C.btChartReq.settings}});
   render();
   setTimeout(()=>document.getElementById('bt-chart-section')?.scrollIntoView({behavior:'smooth'}),50);
 }
 function openBtChartGeneral(it){
-  C.btChartReq={source:'general',settings:it.settings,combo:it.combo,symbol:null};
+  C.btChartReq={source:'general',settings:cloneBtSettings(it.settings),combo:it.combo,symbol:null};
   C.btChartData=null;C.btChartLoading=false;
   render();
   setTimeout(()=>document.getElementById('bt-chart-section')?.scrollIntoView({behavior:'smooth'}),50);
@@ -1519,6 +1522,84 @@ function rBacktestPage(){
     titleParts.push(`${req.settings.interval} · ${req.settings.mode}${req.settings.mode!=='RSI'?'('+req.settings.maPeriod+')':''}`);
     if(req.score!=null)titleParts.push('النقاط: '+req.score);
     s5.appendChild(el('div',{style:{fontWeight:'800',color:'var(--accent)',marginTop:'10px'}},titleParts.join(' — ')));
+
+    // ── لوحة إعدادات هذا الشارت — قابلة للتعديل، وتعيد حساب الشارت
+    // والصفقات والنتيجة الإجمالية عند الضغط على «إعادة الحساب» ──
+    {
+      const RS=req.settings;
+      const RF=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'number',value:String(RS[key]),...ex});i.onchange=()=>{RS[key]=parseFloat(i.value)||0;};f.appendChild(i);return f;};
+      const RFT=(label,key)=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'text',value:String(RS[key])});i.onchange=()=>{RS[key]=i.value;};f.appendChild(i);return f;};
+      const RFS=(label,key,opts,onSel)=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const sl=el('select',{});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(String(RS[key])===v)o.setAttribute('selected','');sl.appendChild(o);});sl.onchange=()=>{RS[key]=sl.value;if(onSel)onSel();render();};f.appendChild(sl);return f;};
+      const RTOG=(title,key)=>{const on=!!RS[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{RS[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));row.appendChild(lbl);return row;};
+      const RTOGN=(title,pKey,cKey)=>{const on=!!(RS[pKey]&&RS[pKey][cKey]);const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{RS[pKey]=RS[pKey]||{};RS[pKey][cKey]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));row.appendChild(lbl);return row;};
+
+      const setBox=el('details',{open:'',style:{marginTop:'10px',background:'var(--bg3)',borderRadius:'10px',padding:'12px'}});
+      setBox.appendChild(el('summary',{style:{cursor:'pointer',fontWeight:'800',fontSize:'12px',color:'var(--accent)'}},'⚙️ إعدادات هذا الشارت — عدّل ثم اضغط «إعادة الحساب»'));
+
+      const g5a=G();
+      g5a.appendChild(RFS('الفريم','interval',[['1h','ساعة'],['4h','4 ساعات']]));
+      g5a.appendChild(RFS('المؤشر','mode',[['RSI','RSI خام'],['SMA','SMA'],['EMA','EMA']]));
+      if(RS.mode!=='RSI')g5a.appendChild(RF('فترة MA','maPeriod',{min:'2',max:'50',step:'1'}));
+      g5a.appendChild(RFS('وضع التكرار','revMode',[['candles','candles'],['rsi','rsi']]));
+      g5a.appendChild(RF('عدد التكرار','revCount',{min:'1',max:'10',step:'1'}));
+      g5a.appendChild(RFS('فلتر الاتجاه','dirFilter',[['all','الكل'],['long','لونغ فقط'],['short','شورت فقط']]));
+      setBox.appendChild(g5a);
+
+      setBox.appendChild(el('div',{style:{fontWeight:'800',fontSize:'11px',marginTop:'10px',marginBottom:'4px',color:'var(--text2)'}},'أنواع الإشارات المسموحة'));
+      const g5b=G();
+      g5b.appendChild(RTOG('دايفرجنس','enableDiv'));
+      g5b.appendChild(RTOGN('OB (70↑/70↓)','sigQueueFilters','ob'));
+      g5b.appendChild(RTOGN('OS (30↓/30↑)','sigQueueFilters','os'));
+      g5b.appendChild(RTOGN('مؤكدة (⚡)','sigQueueFilters','conf'));
+      g5b.appendChild(RTOGN('Trailing (TS/TL)','sigQueueFilters','trail'));
+      setBox.appendChild(g5b);
+
+      setBox.appendChild(el('div',{style:{fontWeight:'800',fontSize:'11px',marginTop:'10px',marginBottom:'4px',color:'var(--text2)'}},'Trailing RSI'));
+      const g5c=G();
+      g5c.appendChild(RTOG('تفعيل Trailing SHORT','trSon'));
+      g5c.appendChild(RF('بداية SHORT','trSstart',{step:'1'}));
+      g5c.appendChild(RF('فجوة SHORT','trSgap',{step:'0.5'}));
+      g5c.appendChild(RTOG('تفعيل Trailing LONG','trLon'));
+      g5c.appendChild(RF('بداية LONG','trLstart',{step:'1'}));
+      g5c.appendChild(RF('فجوة LONG','trLgap',{step:'0.5'}));
+      setBox.appendChild(g5c);
+
+      setBox.appendChild(el('div',{style:{fontWeight:'800',fontSize:'11px',marginTop:'10px',marginBottom:'4px',color:'var(--text2)'}},'فلتر نظام BTC (EMA200 + SuperTrend)'));
+      const g5d=G();
+      g5d.appendChild(RTOG('فلتر EMA200','ema200FilterOn'));
+      g5d.appendChild(RTOG('فلتر SuperTrend','stFilterOn'));
+      g5d.appendChild(RFS('فريم الفلتر','ema200TF',[['1h','ساعة'],['4h','4 ساعات']],()=>{RS.stTF=RS.ema200TF;}));
+      g5d.appendChild(RF('فترة SuperTrend','stPeriod',{min:'2',step:'1'}));
+      g5d.appendChild(RF('مضاعف SuperTrend','stMult',{step:'0.5'}));
+      setBox.appendChild(g5d);
+
+      setBox.appendChild(el('div',{style:{fontWeight:'800',fontSize:'11px',marginTop:'10px',marginBottom:'4px',color:'var(--text2)'}},'إدارة الصفقة (Cornix)'));
+      const g5e=G();
+      g5e.appendChild(RF('TP1 %','cxTP1',{step:'0.1',min:'0.1'}));
+      g5e.appendChild(RF('TP1 كمية %','cxTP1Amt',{step:'1',min:'1',max:'100'}));
+      g5e.appendChild(RTOG('وقف خسارة','cxSLon'));
+      g5e.appendChild(RF('SL %','cxSL',{step:'0.1',min:'0'}));
+      g5e.appendChild(RTOG('هدف ثانٍ TP2','cxTP2on'));
+      g5e.appendChild(RF('TP2 %','cxTP2',{step:'0.1',min:'0'}));
+      g5e.appendChild(RTOG('دخول ثانٍ','cxEntry2on'));
+      g5e.appendChild(RF('دخول2 مسافة %','cxEntry2Dist',{step:'0.1',min:'0'}));
+      g5e.appendChild(RFS('Trailing TP','cxTrailTp',[['off','مطفي'],['on','مفعل']]));
+      g5e.appendChild(RF('مسافة Trailing %','cxTrailPct',{step:'0.1',min:'0'}));
+      g5e.appendChild(RTOG('بريك-إيفن (BE)','cxBEon'));
+      g5e.appendChild(RF('الرافعة','cxLev',{min:'1',max:'125',step:'1'}));
+      g5e.appendChild(RFT('حجم الصفقة','cxAmt'));
+      setBox.appendChild(g5e);
+
+      const recalcBtn=el('button',{className:'set-save-btn',style:{marginTop:'10px',width:'100%'}});
+      recalcBtn.textContent='🔄 إعادة حساب الشارت بالإعدادات الجديدة';
+      if(!req.symbol){
+        recalcBtn.disabled=true;
+        setBox.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},'اختر عملة أولاً من القائمة أعلاه.'));
+      }
+      recalcBtn.onclick=()=>requestBtChart(req.symbol,RS,req);
+      setBox.appendChild(recalcBtn);
+      s5.appendChild(setBox);
+    }
 
     if(C.btChartLoading){
       s5.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginTop:'12px',textAlign:'center'}},'⏳ يحمّل بيانات الشارت...'));
