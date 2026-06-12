@@ -137,6 +137,7 @@ function selectSymForSettings(sym){
   draft.sigQueueFilters={...(C.settings.sigQueueFilters||{}),...(ov.sigQueueFilters||{})};
   symSetDraft=draft;
 }
+let btSecOpen={s1:false,s2:false,s3:false,s4:false,s5info:false};
 let settingsTab='cornix',showForm=false,formAccId=null,showLog=false,showDCA=false,dcaSym='',dcaSide='LONG';
 let showManualOrder=false,manualOrderAccId=null,reportAccId=null;
 let fd={name:'',apiKey:'',apiSecret:'',sizeRatio:'1',tag:'personal',isMaster:false,copyExisting:false};
@@ -1256,20 +1257,21 @@ function rBacktestPage(){
   const G=()=>el('div',{className:'set-grid'});
   const info=C.btInfo||{stored:{},symbolsScanned:0,busy:false};
   const busy=info.busy;
+  // رأس قسم قابل للطي: العنوان + زر الإجراء الرئيسي (يبقى ظاهراً دائماً) + سهم طي/فتح التفاصيل
+  const SH=(title,key,actionEl)=>{
+    const head=el('div',{className:'set-sec-title',style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',flexWrap:'wrap'}});
+    head.appendChild(el('div',{style:{flex:'1',minWidth:'120px',cursor:'pointer'},onClick:()=>{btSecOpen[key]=!btSecOpen[key];render();}},title));
+    if(actionEl){const wrap=el('div',{style:{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}});(Array.isArray(actionEl)?actionEl:[actionEl]).forEach(b=>{if(b)wrap.appendChild(b);});head.appendChild(wrap);}
+    head.appendChild(el('button',{className:'btn',style:{padding:'4px 10px',fontSize:'13px',flexShrink:'0',lineHeight:'1'},onClick:()=>{btSecOpen[key]=!btSecOpen[key];render();}},btSecOpen[key]?'▲':'▼'));
+    return head;
+  };
+  const SBody=(key)=>el('div',{style:{display:btSecOpen[key]?'':'none',marginTop:'14px'}});
 
   // ── 1) البيانات ──
-  const s1=S('📥 البيانات');
-  const infoBox=el('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'10px'}});
-  BT_TFS.forEach(tf=>infoBox.appendChild(el('span',{style:{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:'20px',padding:'4px 12px',fontSize:'12px'}},tf+': '+(info.stored[tf]||0)+' عملة')));
-  s1.appendChild(infoBox);
-  s1.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'10px'}},'السكانر يفحص حالياً '+(info.symbolsScanned||0)+' عملة'));
-  const dGrid=G();
-  const daysF=el('div',{className:'set-field'});daysF.appendChild(el('label',{},'عمق التاريخ (أيام)'));
+  const s1=el('div',{className:'set-section'});
   const daysI=el('input',{type:'number',value:String(C.btDays||90),min:'7',max:'730'});
   daysI.onchange=()=>C.btDays=parseInt(daysI.value)||90;
-  daysF.appendChild(daysI);dGrid.appendChild(daysF);s1.appendChild(dGrid);
-  s1.appendChild(el('div',{className:'set-info'},'⚠️ كل العملات × فريمي الساعة و4 ساعات فقط. قد يستغرق دقائق ويُنزَّل مرة واحدة.'));
-  const dlBtn=el('button',{className:'set-save-btn',style:{marginTop:'10px'}});
+  const dlBtn=el('button',{className:'set-save-btn',style:{width:'auto',padding:'8px 14px',fontSize:'12px',marginTop:'0'}});
   dlBtn.disabled=!!(busy||C.btDownloading);
   dlBtn.textContent=C.btDownloading?'⏳ جارٍ التنزيل...':(busy?'⏳ عملية أخرى تعمل...':'⬇️ تنزيل / تحديث البيانات');
   dlBtn.onclick=()=>{
@@ -1277,7 +1279,7 @@ function rBacktestPage(){
     C.btDownloading=true;C.btProgress={kind:'download',doneUnits:0,totalUnits:0};
     send('btDownload',{days:parseInt(daysI.value)||90});render();
   };
-  s1.appendChild(dlBtn);
+  s1.appendChild(SH('📥 البيانات','s1',dlBtn));
   if(C.btProgress?.kind==='download'){
     const p=C.btProgress;const pct=p.totalUnits?Math.round(p.doneUnits/p.totalUnits*100):0;
     const dlProg=el('div',{style:{marginTop:'10px'}});
@@ -1287,6 +1289,15 @@ function rBacktestPage(){
     dlProg.appendChild(el('div',{id:'bt-dl-txt',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px'}},btDlText(p)));
     s1.appendChild(dlProg);
   }
+  const b1=SBody('s1');
+  const infoBox=el('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'10px'}});
+  BT_TFS.forEach(tf=>infoBox.appendChild(el('span',{style:{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:'20px',padding:'4px 12px',fontSize:'12px'}},tf+': '+(info.stored[tf]||0)+' عملة')));
+  b1.appendChild(infoBox);
+  b1.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'10px'}},'السكانر يفحص حالياً '+(info.symbolsScanned||0)+' عملة'));
+  const dGrid=G();
+  const daysF=el('div',{className:'set-field'});daysF.appendChild(el('label',{},'عمق التاريخ (أيام)'));
+  daysF.appendChild(daysI);dGrid.appendChild(daysF);b1.appendChild(dGrid);
+  b1.appendChild(el('div',{className:'set-info'},'⚠️ كل العملات × فريمي الساعة و4 ساعات فقط. قد يستغرق دقائق ويُنزَّل مرة واحدة.'));
   // تصدير/استيراد بيانات الباك تيست
   const exGrid=el('div',{style:{display:'flex',gap:'10px',flexWrap:'wrap',marginTop:'14px'}});
   const exBtn=el('button',{className:'btn',style:{flex:'1',padding:'12px',background:'rgba(46,213,115,.12)',borderColor:'var(--green)',color:'var(--green)',fontWeight:'800',fontSize:'13px'}});
@@ -1310,14 +1321,25 @@ function rBacktestPage(){
   imBtn.textContent='📤 رفع بيانات الباك تيست';
   imBtn.onclick=()=>impInput.click();
   exGrid.appendChild(exBtn);exGrid.appendChild(imBtn);exGrid.appendChild(impInput);
-  s1.appendChild(exGrid);
-  s1.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',lineHeight:'1.6'}},'حمّل بيانات الشموع المخزّنة لحفظها على هاتفك، وارفعها لاحقاً بدل إعادة التنزيل من الإنترنت.'));
+  b1.appendChild(exGrid);
+  b1.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',lineHeight:'1.6'}},'حمّل بيانات الشموع المخزّنة لحفظها على هاتفك، وارفعها لاحقاً بدل إعادة التنزيل من الإنترنت.'));
+  s1.appendChild(b1);
   page.appendChild(s1);
 
   // ── 2) باك تيست فردي ──
-  const s2=S('▶️ باك تيست بإعداداتك');
-  if(C.btSettingsNote)s2.appendChild(el('div',{style:{fontSize:'11px',color:'var(--accent)',background:'var(--bg3)',borderRadius:'8px',padding:'8px 10px',marginBottom:'10px',lineHeight:'1.7'}},'📌 '+C.btSettingsNote));
   const BS=C.btSettings;
+  const runBtn=el('button',{className:'set-save-btn',style:{width:'auto',padding:'8px 14px',fontSize:'12px',marginTop:'0'}});
+  runBtn.disabled=!!C.btRunning;
+  runBtn.textContent=C.btRunning?'⏳ يحسب...':'▶️ شغّل الباك تيست';
+  runBtn.onclick=()=>{
+    if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
+    C.btRunning=true;C.btResult=null;
+    send('btRun',{settings:{...BS}});render();
+  };
+  const sec2=el('div',{className:'set-section'});
+  sec2.appendChild(SH('▶️ باك تيست بإعداداتك','s2',runBtn));
+  const s2=SBody('s2');
+  if(C.btSettingsNote)s2.appendChild(el('div',{style:{fontSize:'11px',color:'var(--accent)',background:'var(--bg3)',borderRadius:'8px',padding:'8px 10px',marginBottom:'10px',lineHeight:'1.7'}},'📌 '+C.btSettingsNote));
   const BF=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'number',value:String(BS[key]),...ex});i.onchange=()=>{BS[key]=parseFloat(i.value)||0;};f.appendChild(i);return f;};
   const BFS=(label,key,opts)=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const sl=el('select',{});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(String(BS[key])===v)o.setAttribute('selected','');sl.appendChild(o);});sl.onchange=()=>{BS[key]=sl.value;render();};f.appendChild(sl);return f;};
   const BTOG=(title,key)=>{const on=!!BS[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{BS[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));row.appendChild(lbl);return row;};
@@ -1339,15 +1361,6 @@ function rBacktestPage(){
   togGrid.appendChild(BTOG('فلتر EMA200','ema200FilterOn'));
   togGrid.appendChild(BTOG('فلتر SuperTrend','stFilterOn'));
   s2.appendChild(togGrid);
-  const runBtn=el('button',{className:'set-save-btn',style:{marginTop:'14px'}});
-  runBtn.disabled=!!C.btRunning;
-  runBtn.textContent=C.btRunning?'⏳ يحسب...':'▶️ شغّل الباك تيست';
-  runBtn.onclick=()=>{
-    if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
-    C.btRunning=true;C.btResult=null;
-    send('btRun',{settings:{...BS}});render();
-  };
-  s2.appendChild(runBtn);
   if(C.btResult){
     if(C.btResult.error){
       s2.appendChild(el('div',{className:'errbdg',style:{marginTop:'12px'}},'❌ '+C.btResult.error));
@@ -1406,10 +1419,46 @@ function rBacktestPage(){
       }
     }
   }
-  page.appendChild(s2);
+  sec2.appendChild(s2);
+  page.appendChild(sec2);
 
   // ── 3) المُحسِّن التلقائي ──
-  const s3=S('🤖 الفحص التلقائي لأفضل إعداد');
+  const optBtnRow=el('div',{style:{display:'flex',gap:'8px',alignItems:'center'}});
+  const optBtn=el('button',{className:'set-save-btn',style:{width:'auto',padding:'8px 14px',fontSize:'12px',marginTop:'0'}});
+  optBtn.disabled=!!C.btOptimizing;
+  optBtn.textContent=C.btOptimizing?'⏳ يفحص...':'▶️ ابدأ الفحص التلقائي';
+  optBtn.onclick=()=>{
+    if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
+    if(!confirm('سيبدأ الفحص وقد يستمر ساعات. متابعة؟'))return;
+    C.btOptimizing=true;C.btOptResult=null;C.btProgress={kind:'optimize',done:0,total:0};
+    send('btOptimize',{budgetHours:C.btBudget||24,minTrades:C.btMinTrades||30});render();
+  };
+  optBtnRow.appendChild(optBtn);
+  if(C.btOptimizing){
+    const stopBtn=el('button',{className:'btn',style:{background:'rgba(255,71,87,.12)',borderColor:'var(--red)',color:'var(--red)',fontWeight:'800',padding:'8px 14px'}});
+    stopBtn.textContent='⏹ إيقاف';
+    stopBtn.onclick=()=>{send('btStop',{});stopBtn.textContent='⏹ يوقف...';stopBtn.disabled=true;};
+    optBtnRow.appendChild(stopBtn);
+  }
+  const sec3=el('div',{className:'set-section'});
+  sec3.appendChild(SH('🤖 الفحص التلقائي لأفضل إعداد','s3',optBtnRow));
+  if(C.btProgress?.kind==='optimize'){
+    const p=C.btProgress;const pct=p.total?(p.done/p.total*100):0;
+    const optProg=el('div',{style:{marginTop:'14px'}});
+    const optBar=el('div',{className:'prog-bar',style:{height:'8px',borderRadius:'4px',overflow:'hidden'}});
+    optBar.appendChild(el('div',{id:'bt-opt-fill',className:'prog-fill',style:{width:pct.toFixed(1)+'%'}}));
+    optProg.appendChild(optBar);
+    const stG3=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'8px'}});
+    const mkS3=(lb,id,v)=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v',id},v));return c2;};
+    stG3.appendChild(mkS3('مكتمل','bt-opt-pct',pct.toFixed(1)+'%'));
+    stG3.appendChild(mkS3('منقضٍ','bt-opt-elapsed',fmtTime(p.elapsedMs)));
+    stG3.appendChild(mkS3('متبقٍّ','bt-opt-eta',fmtTime(p.etaMs)));
+    optProg.appendChild(stG3);
+    optProg.appendChild(el('div',{id:'bt-opt-count',style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',textAlign:'center'}},`قُيِّم ${p.evaluated||0} توليفة من ${p.total||0}`));
+    optProg.appendChild(el('div',{id:'bt-opt-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل حتى الآن: عائد ${p.best.metrics.netReturnPct}% · نجاح ${p.best.metrics.winRate}% · صفقات ${p.best.metrics.trades}`:''));
+    sec3.appendChild(optProg);
+  }
+  const s3=SBody('s3');
   s3.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'10px'}},'يجرّب كل التوليفات (المؤشر + الإدارة + الفلاتر + الفريم) ويختار الأفضل للفترة المخزّنة.'));
   s3.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'4px'}},'📤 (اختياري) ارفع نسختك الحالية كأساس — يُعدَّل عليها فقط حقول الفحص'));
   const baseInput=el('input',{type:'file',accept:'.json,application/json'});
@@ -1443,40 +1492,6 @@ function rBacktestPage(){
   g3.appendChild(bF('الميزانية (ساعات)','btBudget',24,{step:'0.5',min:'0.5'}));
   g3.appendChild(bF('أقل عدد صفقات','btMinTrades',30,{step:'1',min:'1'}));
   s3.appendChild(g3);
-  const optBtnRow=el('div',{style:{display:'flex',gap:'8px',marginTop:'14px'}});
-  const optBtn=el('button',{className:'set-save-btn',style:{flex:'1'}});
-  optBtn.disabled=!!C.btOptimizing;
-  optBtn.textContent=C.btOptimizing?'⏳ يفحص...':'▶️ ابدأ الفحص التلقائي';
-  optBtn.onclick=()=>{
-    if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
-    if(!confirm('سيبدأ الفحص وقد يستمر ساعات. متابعة؟'))return;
-    C.btOptimizing=true;C.btOptResult=null;C.btProgress={kind:'optimize',done:0,total:0};
-    send('btOptimize',{budgetHours:C.btBudget||24,minTrades:C.btMinTrades||30});render();
-  };
-  optBtnRow.appendChild(optBtn);
-  if(C.btOptimizing){
-    const stopBtn=el('button',{className:'btn',style:{background:'rgba(255,71,87,.12)',borderColor:'var(--red)',color:'var(--red)',fontWeight:'800',padding:'0 20px'}});
-    stopBtn.textContent='⏹ إيقاف';
-    stopBtn.onclick=()=>{send('btStop',{});stopBtn.textContent='⏹ يوقف...';stopBtn.disabled=true;};
-    optBtnRow.appendChild(stopBtn);
-  }
-  s3.appendChild(optBtnRow);
-  if(C.btProgress?.kind==='optimize'){
-    const p=C.btProgress;const pct=p.total?(p.done/p.total*100):0;
-    const optProg=el('div',{style:{marginTop:'14px'}});
-    const optBar=el('div',{className:'prog-bar',style:{height:'8px',borderRadius:'4px',overflow:'hidden'}});
-    optBar.appendChild(el('div',{id:'bt-opt-fill',className:'prog-fill',style:{width:pct.toFixed(1)+'%'}}));
-    optProg.appendChild(optBar);
-    const stG3=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'8px'}});
-    const mkS3=(lb,id,v)=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v',id},v));return c2;};
-    stG3.appendChild(mkS3('مكتمل','bt-opt-pct',pct.toFixed(1)+'%'));
-    stG3.appendChild(mkS3('منقضٍ','bt-opt-elapsed',fmtTime(p.elapsedMs)));
-    stG3.appendChild(mkS3('متبقٍّ','bt-opt-eta',fmtTime(p.etaMs)));
-    optProg.appendChild(stG3);
-    optProg.appendChild(el('div',{id:'bt-opt-count',style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',textAlign:'center'}},`قُيِّم ${p.evaluated||0} توليفة من ${p.total||0}`));
-    optProg.appendChild(el('div',{id:'bt-opt-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل حتى الآن: عائد ${p.best.metrics.netReturnPct}% · نجاح ${p.best.metrics.winRate}% · صفقات ${p.best.metrics.trades}`:''));
-    s3.appendChild(optProg);
-  }
   if(C.btOptResult){
     if(C.btOptResult.error){
       s3.appendChild(el('div',{className:'errbdg',style:{marginTop:'12px'}},'❌ '+C.btOptResult.error));
@@ -1544,10 +1559,50 @@ function rBacktestPage(){
       }
     }
   }
-  page.appendChild(s3);
+  sec3.appendChild(s3);
+  page.appendChild(sec3);
 
   // ── 4) أفضل إعداد لكل عملة ──
-  const s4=S('🪙 أفضل إعداد لكل عملة');
+  const hasLb=!!C.btOptResult?.leaderboard?.length;
+  let symBtnRow=null;
+  if(hasLb){
+    symBtnRow=el('div',{style:{display:'flex',gap:'8px',alignItems:'center'}});
+    const symBtn=el('button',{className:'set-save-btn',style:{width:'auto',padding:'8px 14px',fontSize:'12px',marginTop:'0'}});
+    symBtn.disabled=!!C.btOptimizingSym;
+    symBtn.textContent=C.btOptimizingSym?'⏳ يفحص...':'▶️ ابدأ فحص كل عملة';
+    symBtn.onclick=()=>{
+      if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
+      if(!confirm('سيبدأ فحص كل عملة على حدة وقد يستمر لساعات. متابعة؟'))return;
+      C.btOptimizingSym=true;C.btOptSymResult=null;C.btProgress={kind:'optSym',done:0,total:0};
+      send('btOptPerSymbol',{leaderboard:C.btOptResult.leaderboard,budgetHours:C.btSymBudget||3,minTrades:C.btSymMinTrades||5});render();
+    };
+    symBtnRow.appendChild(symBtn);
+    if(C.btOptimizingSym){
+      const stopBtn2=el('button',{className:'btn',style:{background:'rgba(255,71,87,.12)',borderColor:'var(--red)',color:'var(--red)',fontWeight:'800',padding:'8px 14px'}});
+      stopBtn2.textContent='⏹ إيقاف';
+      stopBtn2.onclick=()=>{send('btStop',{});stopBtn2.textContent='⏹ يوقف...';stopBtn2.disabled=true;};
+      symBtnRow.appendChild(stopBtn2);
+    }
+  }
+  const sec4=el('div',{className:'set-section'});
+  sec4.appendChild(SH('🪙 أفضل إعداد لكل عملة','s4',symBtnRow));
+  if(C.btProgress?.kind==='optSym'){
+    const p=C.btProgress;const pct=p.total?(p.done/p.total*100):0;
+    const symProg=el('div',{style:{marginTop:'14px'}});
+    const symBar=el('div',{className:'prog-bar',style:{height:'8px',borderRadius:'4px',overflow:'hidden'}});
+    symBar.appendChild(el('div',{id:'bt-optsym-fill',className:'prog-fill',style:{width:pct.toFixed(1)+'%'}}));
+    symProg.appendChild(symBar);
+    const stG4=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'8px'}});
+    const mkS4=(lb,id,v)=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v',id},v));return c2;};
+    stG4.appendChild(mkS4('مكتمل','bt-optsym-pct',pct.toFixed(1)+'%'));
+    stG4.appendChild(mkS4('منقضٍ','bt-optsym-elapsed',fmtTime(p.elapsedMs)));
+    stG4.appendChild(mkS4('متبقٍّ','bt-optsym-eta',fmtTime(p.etaMs)));
+    symProg.appendChild(stG4);
+    symProg.appendChild(el('div',{id:'bt-optsym-count',style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',textAlign:'center'}},`${p.done||0}/${p.total||0} — ${p.sym||''}`));
+    symProg.appendChild(el('div',{id:'bt-optsym-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل لـ${p.sym}: عائد ${p.best.metrics.netReturnPct}% · صفقات ${p.best.metrics.trades}`:''));
+    sec4.appendChild(symProg);
+  }
+  const s4=SBody('s4');
   s4.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'10px',lineHeight:'1.8'}},
     'يفحص كل عملة على حدة (فريم الساعة و4 ساعات) ويضبط عتبة وفجوة Trailing RSI الخاصة بها بحيث تقع إشارة شورت (TS) عند أفضل قمة وإشارة لونغ (TL) عند أفضل قاع — بالاعتماد على متوسط الانعكاس بعد الإشارة. ثم يبحث عن أفضل إدارة صفقة (TP/SL/دخول2/Trailing TP/BE) لكل عملة. يستخدم أفضل توليفات المؤشر من نتيجة الفحص العام أعلاه.'));
   s4.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'4px'}},'📂 (اختياري) استعد نتيجة فحص سابقة لكل عملة بدل إعادة الفحص من الصفر'));
@@ -1569,47 +1624,13 @@ function rBacktestPage(){
   };
   restoreInput4.onclick=(e)=>{e.target.value='';};
   s4.appendChild(restoreInput4);
-  if(!C.btOptResult?.leaderboard?.length){
+  if(!hasLb){
     s4.appendChild(el('div',{className:'set-info'},'⚠️ شغّل «الفحص التلقائي» أعلاه أولاً، أو استعد ملف نتيجة فحص سابقة، حتى تتوفر توليفات المؤشر الأساسية لهذا الفحص.'));
   }else{
     const g4=G();
     g4.appendChild(bF('الميزانية (ساعات)','btSymBudget',3,{step:'0.5',min:'0.5'}));
     g4.appendChild(bF('أقل عدد صفقات','btSymMinTrades',5,{step:'1',min:'1'}));
     s4.appendChild(g4);
-    const symBtnRow=el('div',{style:{display:'flex',gap:'8px',marginTop:'14px'}});
-    const symBtn=el('button',{className:'set-save-btn',style:{flex:'1'}});
-    symBtn.disabled=!!C.btOptimizingSym;
-    symBtn.textContent=C.btOptimizingSym?'⏳ يفحص...':'▶️ ابدأ فحص كل عملة';
-    symBtn.onclick=()=>{
-      if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
-      if(!confirm('سيبدأ فحص كل عملة على حدة وقد يستمر لساعات. متابعة؟'))return;
-      C.btOptimizingSym=true;C.btOptSymResult=null;C.btProgress={kind:'optSym',done:0,total:0};
-      send('btOptPerSymbol',{leaderboard:C.btOptResult.leaderboard,budgetHours:C.btSymBudget||3,minTrades:C.btSymMinTrades||5});render();
-    };
-    symBtnRow.appendChild(symBtn);
-    if(C.btOptimizingSym){
-      const stopBtn2=el('button',{className:'btn',style:{background:'rgba(255,71,87,.12)',borderColor:'var(--red)',color:'var(--red)',fontWeight:'800',padding:'0 20px'}});
-      stopBtn2.textContent='⏹ إيقاف';
-      stopBtn2.onclick=()=>{send('btStop',{});stopBtn2.textContent='⏹ يوقف...';stopBtn2.disabled=true;};
-      symBtnRow.appendChild(stopBtn2);
-    }
-    s4.appendChild(symBtnRow);
-    if(C.btProgress?.kind==='optSym'){
-      const p=C.btProgress;const pct=p.total?(p.done/p.total*100):0;
-      const symProg=el('div',{style:{marginTop:'14px'}});
-      const symBar=el('div',{className:'prog-bar',style:{height:'8px',borderRadius:'4px',overflow:'hidden'}});
-      symBar.appendChild(el('div',{id:'bt-optsym-fill',className:'prog-fill',style:{width:pct.toFixed(1)+'%'}}));
-      symProg.appendChild(symBar);
-      const stG4=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'8px'}});
-      const mkS4=(lb,id,v)=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v',id},v));return c2;};
-      stG4.appendChild(mkS4('مكتمل','bt-optsym-pct',pct.toFixed(1)+'%'));
-      stG4.appendChild(mkS4('منقضٍ','bt-optsym-elapsed',fmtTime(p.elapsedMs)));
-      stG4.appendChild(mkS4('متبقٍّ','bt-optsym-eta',fmtTime(p.etaMs)));
-      symProg.appendChild(stG4);
-      symProg.appendChild(el('div',{id:'bt-optsym-count',style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',textAlign:'center'}},`${p.done||0}/${p.total||0} — ${p.sym||''}`));
-      symProg.appendChild(el('div',{id:'bt-optsym-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل لـ${p.sym}: عائد ${p.best.metrics.netReturnPct}% · صفقات ${p.best.metrics.trades}`:''));
-      s4.appendChild(symProg);
-    }
   }
   if(C.btOptSymResult){
       if(C.btOptSymResult.error){
@@ -1666,7 +1687,8 @@ function rBacktestPage(){
         }
       }
     }
-  page.appendChild(s4);
+  sec4.appendChild(s4);
+  page.appendChild(sec4);
 
   // ── 5) تحقق من النتائج (شارت يطابق TradingView) ──
   const s5=S('🔍 تحقق من النتائج (شارت)');
@@ -1709,7 +1731,7 @@ function rBacktestPage(){
       const RTOG=(title,key)=>{const on=!!RS[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{RS[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));row.appendChild(lbl);return row;};
       const RTOGN=(title,pKey,cKey)=>{const on=!!(RS[pKey]&&RS[pKey][cKey]);const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{RS[pKey]=RS[pKey]||{};RS[pKey][cKey]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));row.appendChild(lbl);return row;};
 
-      const setBox=el('details',{open:'',style:{marginTop:'10px',background:'var(--bg3)',borderRadius:'10px',padding:'12px'}});
+      const setBox=el('details',{style:{marginTop:'10px',background:'var(--bg3)',borderRadius:'10px',padding:'12px'}});
       setBox.appendChild(el('summary',{style:{cursor:'pointer',fontWeight:'800',fontSize:'12px',color:'var(--accent)'}},'⚙️ إعدادات هذا الشارت — عدّل ثم اضغط «إعادة الحساب»'));
 
       const g5a=G();
@@ -1791,6 +1813,17 @@ function rBacktestPage(){
     }else if(C.btChartData&&req.symbol){
       const chartBox=el('div',{id:'bt-chart-candles',style:{width:'100%',height:'420px',marginTop:'10px',borderRadius:'8px',overflow:'hidden',background:'var(--bg3)'}});
       s5.appendChild(chartBox);
+
+      // طي/فتح كل ما تحت الشارت (الأسطورة + الإحصائيات + أنواع الإشارات + جدول الصفقات) — الشارت نفسه يبقى ظاهراً دائماً
+      const detKey='s5info';
+      const detToggle=el('div',{style:{display:'flex',justifyContent:'center',marginTop:'8px'}});
+      const detBtn=el('button',{className:'btn',style:{padding:'5px 16px',fontSize:'12px'}},(btSecOpen[detKey]?'▲ إخفاء ':'▼ عرض ')+'الإحصائيات وأنواع الإشارات والصفقات');
+      detBtn.onclick=()=>{btSecOpen[detKey]=!btSecOpen[detKey];render();};
+      detToggle.appendChild(detBtn);
+      s5.appendChild(detToggle);
+
+      const detBody=el('div',{style:{display:btSecOpen[detKey]?'':'none'}});
+
       const legend=el('div',{style:{display:'flex',flexWrap:'wrap',gap:'10px',fontSize:'10px',color:'var(--text2)',marginTop:'8px'}});
       const lg=(color,shape,text)=>{
         const sp=el('span',{style:{display:'inline-flex',alignItems:'center',gap:'4px'}});
@@ -1800,7 +1833,7 @@ function rBacktestPage(){
       };
       legend.appendChild(lg('#2ed573','●','دخول/خروج رابح'));
       legend.appendChild(lg('#ff4757','●','دخول/خروج خاسر'));
-      s5.appendChild(legend);
+      detBody.appendChild(legend);
 
       // فلتر أنواع الإشارات المعروضة على الشارت — الصفقات والنتيجة الإجمالية
       // أدناه تُحسب من الأنواع المختارة فقط (صفقة واحدة بنفس الوقت تُغلق
@@ -1820,7 +1853,7 @@ function rBacktestPage(){
         filterGrid.appendChild(lbl);
       });
       filterBox.appendChild(filterGrid);
-      s5.appendChild(filterBox);
+      detBody.appendChild(filterBox);
 
       const trades=computeBtChartTrades(C.btChartData,sigTypes);
       const cd=C.btChartData.candles;
@@ -1831,10 +1864,10 @@ function rBacktestPage(){
       statsG.appendChild(mkStat('صفقات (محسوبة)',String(mm.trades)));
       statsG.appendChild(mkStat('نجاح',mm.winRate+'%'));
       statsG.appendChild(mkStat('إجمالي العائد',mm.netReturnPct+'%',mm.netReturnPct>=0?'c-green':'c-red'));
-      s5.appendChild(statsG);
+      detBody.appendChild(statsG);
 
       if(trades.length){
-        s5.appendChild(el('div',{className:'set-sec-title',style:{marginTop:'14px',border:'none',paddingBottom:'0'}},`📋 الصفقات (${trades.length})`));
+        detBody.appendChild(el('div',{className:'set-sec-title',style:{marginTop:'14px',border:'none',paddingBottom:'0'}},`📋 الصفقات (${trades.length})`));
         const wrap5=el('div',{style:{overflowX:'auto',maxHeight:'300px',overflowY:'auto'}});
         const tbl5=el('table',{style:{width:'100%',borderCollapse:'collapse',fontSize:'11px'}});
         const thead5=el('tr');
@@ -1853,10 +1886,11 @@ function rBacktestPage(){
           row.appendChild(td5(t.pnlPct+'%',t.pnlPct>=0?'c-green':'c-red'));
           tbl5.appendChild(row);
         });
-        wrap5.appendChild(tbl5);s5.appendChild(wrap5);
+        wrap5.appendChild(tbl5);detBody.appendChild(wrap5);
       }else{
-        s5.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginTop:'12px',textAlign:'center'}},'لا توجد صفقات بهذه الإعدادات والأنواع المختارة خلال الفترة المخزّنة.'));
+        detBody.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginTop:'12px',textAlign:'center'}},'لا توجد صفقات بهذه الإعدادات والأنواع المختارة خلال الفترة المخزّنة.'));
       }
+      s5.appendChild(detBody);
     }
   }
   page.appendChild(s5);
