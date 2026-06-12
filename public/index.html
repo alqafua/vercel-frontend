@@ -948,21 +948,47 @@ function openBtChartGeneral(it){
 }
 let _btChart=null;
 const BT_SIG_MARK={
-  a70:{position:'aboveBar',color:'#ff4757',shape:'arrowDown',text:'70↑'},
-  b70:{position:'aboveBar',color:'#ffa502',shape:'arrowDown',text:'70↓'},
-  b30:{position:'belowBar',color:'#3d9fff',shape:'arrowUp',text:'30↓'},
-  a30:{position:'belowBar',color:'#2ed573',shape:'arrowUp',text:'30↑'},
-  cl:{position:'belowBar',color:'#00e5ff',shape:'arrowUp',text:'⚡شراء'},
-  cs:{position:'aboveBar',color:'#00e5ff',shape:'arrowDown',text:'⚡بيع'},
-  ts:{position:'aboveBar',color:'#a55eea',shape:'arrowDown',text:'TS'},
-  tl:{position:'belowBar',color:'#a55eea',shape:'arrowUp',text:'TL'},
+  a70:{position:'aboveBar',color:'#ff4757',shape:'arrowDown',text:'70↑',label:'تجاوز 70'},
+  b70:{position:'aboveBar',color:'#ffa502',shape:'arrowDown',text:'70↓',label:'نزول من 70'},
+  b30:{position:'belowBar',color:'#3d9fff',shape:'arrowUp',text:'30↓',label:'نزول من 30'},
+  a30:{position:'belowBar',color:'#2ed573',shape:'arrowUp',text:'30↑',label:'صعود من 30'},
+  cl:{position:'belowBar',color:'#00e5ff',shape:'arrowUp',text:'⚡شراء',label:'شراء مؤكد'},
+  cs:{position:'aboveBar',color:'#00e5ff',shape:'arrowDown',text:'⚡بيع',label:'بيع مؤكد'},
+  ts:{position:'aboveBar',color:'#a55eea',shape:'arrowDown',text:'TS',label:'تتبع شورت'},
+  tl:{position:'belowBar',color:'#a55eea',shape:'arrowUp',text:'TL',label:'تتبع لونغ'},
 };
+function getBtChartSigTypes(){
+  if(!C.btChartSigTypes)C.btChartSigTypes={a70:true,b70:true,b30:true,a30:true,cl:true,cs:true,ts:true,tl:true};
+  return C.btChartSigTypes;
+}
+// إعادة حساب الصفقات «صفقة واحدة بنفس الوقت» من الأنواع المختارة فقط —
+// كل إشارة معها نتيجة محاكاة مستقلة (d.signals[].trade)، والإشارات مرتّبة زمنياً أصلاً
+function computeBtChartTrades(d,sigTypes){
+  const trades=[];
+  let busyUntil=-1;
+  (d.signals||[]).forEach(s=>{
+    if(!sigTypes[s.type]||!s.trade)return;
+    if(s.i<=busyUntil)return;
+    trades.push({entryIdx:s.trade.entryIdx,exitIdx:s.trade.exitIdx,side:s.side,type:s.type,exitReason:s.trade.exitReason,pnlPct:s.trade.pnlPct});
+    busyUntil=s.trade.exitIdx;
+  });
+  return trades;
+}
+function computeBtChartMetrics(trades,capFrac){
+  const n=trades.length;
+  if(!n)return{trades:0,winRate:0,netReturnPct:0};
+  let wins=0,equity=1;
+  trades.forEach(t=>{if(t.pnlPct>=0)wins++;equity*=(1+(t.pnlPct/100)*capFrac);});
+  return{trades:n,winRate:parseFloat((wins/n*100).toFixed(2)),netReturnPct:parseFloat(((equity-1)*100).toFixed(2))};
+}
 function renderBtChart(){
   if(_btChart){try{_btChart.remove();}catch(e){}_btChart=null;}
   const container=document.getElementById('bt-chart-candles');
   if(!container)return;
   const d=C.btChartData;
   if(!d||d.error||!d.candles?.length)return;
+  const sigTypes=getBtChartSigTypes();
+  const trades=computeBtChartTrades(d,sigTypes);
   const chart=LightweightCharts.createChart(container,{
     width:container.clientWidth,height:420,
     layout:{background:{color:'transparent'},textColor:'#8892b0'},
@@ -984,10 +1010,11 @@ function renderBtChart(){
 
   const markers=[];
   (d.signals||[]).forEach(s=>{
+    if(!sigTypes[s.type])return;
     const m=BT_SIG_MARK[s.type];if(!m)return;
     markers.push({time:Math.floor(d.candles[s.i][0]/1000),position:m.position,color:m.color,shape:m.shape,text:m.text});
   });
-  (d.trades||[]).forEach(t=>{
+  trades.forEach(t=>{
     markers.push({time:Math.floor(d.candles[t.entryIdx][0]/1000),position:t.side==='LONG'?'belowBar':'aboveBar',color:t.side==='LONG'?'#2ed573':'#ff4757',shape:t.side==='LONG'?'arrowUp':'arrowDown',text:t.side==='LONG'?'دخول لونغ':'دخول شورت'});
     const exitColor=t.pnlPct>=0?'#2ed573':'#ff4757';
     markers.push({time:Math.floor(d.candles[t.exitIdx][0]/1000),position:t.side==='LONG'?'aboveBar':'belowBar',color:exitColor,shape:'circle',text:`${t.exitReason} ${t.pnlPct>=0?'+':''}${t.pnlPct}%`});
@@ -1292,6 +1319,10 @@ function rBacktestPage(){
       stG2.appendChild(mkS2('النقاط',String(b.score)));
       bestBox.appendChild(stG2);
       bestBox.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px'}},`✅ أُرسلت لتلغرام أيضاً. قُيِّم ${C.btOptResult.evaluated} توليفة في ${fmtTime(C.btOptResult.elapsedMs)}.`));
+      const bestDetails=el('details',{style:{marginTop:'10px'}});
+      bestDetails.appendChild(el('summary',{style:{cursor:'pointer',fontSize:'12px',color:'var(--accent)',fontWeight:'700'}},'📄 عرض كل الإعدادات (JSON كامل)'));
+      bestDetails.appendChild(el('pre',{style:{fontSize:'10px',whiteSpace:'pre-wrap',wordBreak:'break-all',background:'var(--bg2)',padding:'8px',borderRadius:'6px',marginTop:'6px',maxHeight:'320px',overflowY:'auto'}},JSON.stringify(b.settings,null,2)));
+      bestBox.appendChild(bestDetails);
       s3.appendChild(bestBox);
       const expBestBtn=el('button',{className:'btn',style:{width:'100%',marginTop:'10px',padding:'12px',background:'rgba(46,213,115,.12)',borderColor:'var(--green)',color:'var(--green)',fontWeight:'800'}});
       expBestBtn.textContent='⬇️ حمّل أفضل إعداد كنسخة احتياطية (إعدادات فقط)';
@@ -1438,9 +1469,17 @@ function rBacktestPage(){
             const tryBtn4=el('button',{style:{fontSize:'13px',padding:'2px 6px',marginInlineEnd:'2px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'جرّب وعدّل',onClick:()=>{applyComboToTest(info);window.scrollTo({top:0,behavior:'smooth'});}},'🧪');
             const dlBtn4=el('button',{style:{fontSize:'13px',padding:'2px 6px',marginInlineEnd:'2px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'تنزيل',onClick:()=>downloadBtBackup(info.settings)},'⬇️');
             const chartBtn4=el('button',{style:{fontSize:'13px',padding:'2px 6px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'تحقق من الشارت',onClick:()=>requestBtChart(sym,info.settings,{source:'persymbol',combo:info.combo,score:info.score})},'🔍');
-            actTd4.appendChild(tryBtn4);actTd4.appendChild(dlBtn4);actTd4.appendChild(chartBtn4);
+            const jsonBtn4=el('button',{style:{fontSize:'13px',padding:'2px 6px',marginInlineStart:'2px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'عرض كل الإعدادات (JSON)',onClick:()=>{C.btSymJsonOpen=C.btSymJsonOpen||{};C.btSymJsonOpen[sym]=!C.btSymJsonOpen[sym];render();}},'📄');
+            actTd4.appendChild(tryBtn4);actTd4.appendChild(dlBtn4);actTd4.appendChild(chartBtn4);actTd4.appendChild(jsonBtn4);
             row.appendChild(actTd4);
             tbl4.appendChild(row);
+            if(C.btSymJsonOpen?.[sym]){
+              const jrow=el('tr');
+              const jtd=el('td',{colspan:'12',style:{padding:'8px',borderBottom:'1px solid var(--border)'}});
+              jtd.appendChild(el('pre',{style:{fontSize:'10px',whiteSpace:'pre-wrap',wordBreak:'break-all',background:'var(--bg2)',padding:'8px',borderRadius:'6px',maxHeight:'320px',overflowY:'auto',margin:'0'}},JSON.stringify(info.settings,null,2)));
+              jrow.appendChild(jtd);
+              tbl4.appendChild(jrow);
+            }
           });
           lbWrap4.appendChild(tbl4);s4.appendChild(lbWrap4);
         }else{
@@ -1495,18 +1534,41 @@ function rBacktestPage(){
         sp.appendChild(document.createTextNode(text));
         return sp;
       };
-      legend.appendChild(lg('#ff4757','▼','تجاوز 70'));
-      legend.appendChild(lg('#ffa502','▼','نزول من 70'));
-      legend.appendChild(lg('#3d9fff','▲','نزول من 30'));
-      legend.appendChild(lg('#2ed573','▲','صعود من 30'));
-      legend.appendChild(lg('#00e5ff','◆','إشارة مؤكدة ⚡'));
-      legend.appendChild(lg('#a55eea','◆','Trailing'));
       legend.appendChild(lg('#2ed573','●','دخول/خروج رابح'));
       legend.appendChild(lg('#ff4757','●','دخول/خروج خاسر'));
       s5.appendChild(legend);
 
-      const trades=C.btChartData.trades||[];
+      // فلتر أنواع الإشارات المعروضة على الشارت — الصفقات والنتيجة الإجمالية
+      // أدناه تُحسب من الأنواع المختارة فقط (صفقة واحدة بنفس الوقت تُغلق
+      // بربح أو وقف خسارة قبل فتح التالية من الأنواع المختارة)
+      const sigTypes=getBtChartSigTypes();
+      const filterBox=el('div',{style:{marginTop:'10px',padding:'10px',background:'var(--bg3)',borderRadius:'8px'}});
+      filterBox.appendChild(el('div',{style:{fontWeight:'800',fontSize:'12px',marginBottom:'6px'}},'🎛️ الإشارات المعروضة على الشارت (الصفقات والنتيجة الإجمالية أدناه تُحسب من المختار فقط — صفقة واحدة بنفس الوقت):'));
+      const filterGrid=el('div',{style:{display:'flex',flexWrap:'wrap',gap:'10px',fontSize:'11px'}});
+      Object.keys(BT_SIG_MARK).forEach(type=>{
+        const m=BT_SIG_MARK[type];
+        const lbl=el('label',{style:{display:'flex',alignItems:'center',gap:'4px',cursor:'pointer',whiteSpace:'nowrap'}});
+        const cb=el('input',{type:'checkbox',checked:sigTypes[type]!==false});
+        cb.onchange=()=>{sigTypes[type]=cb.checked;render();};
+        lbl.appendChild(cb);
+        lbl.appendChild(el('span',{style:{color:m.color,fontWeight:'800'}},m.text));
+        lbl.appendChild(document.createTextNode(m.label));
+        filterGrid.appendChild(lbl);
+      });
+      filterBox.appendChild(filterGrid);
+      s5.appendChild(filterBox);
+
+      const trades=computeBtChartTrades(C.btChartData,sigTypes);
       const cd=C.btChartData.candles;
+      const capFrac=(parseFloat(String(req.settings.cxAmt).replace('%',''))||1)/100;
+      const mm=computeBtChartMetrics(trades,capFrac);
+      const statsG=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'10px'}});
+      const mkStat=(lb,v,cl='')=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v '+cl},String(v)));return c2;};
+      statsG.appendChild(mkStat('صفقات (محسوبة)',String(mm.trades)));
+      statsG.appendChild(mkStat('نجاح',mm.winRate+'%'));
+      statsG.appendChild(mkStat('إجمالي العائد',mm.netReturnPct+'%',mm.netReturnPct>=0?'c-green':'c-red'));
+      s5.appendChild(statsG);
+
       if(trades.length){
         s5.appendChild(el('div',{className:'set-sec-title',style:{marginTop:'14px',border:'none',paddingBottom:'0'}},`📋 الصفقات (${trades.length})`));
         const wrap5=el('div',{style:{overflowX:'auto',maxHeight:'300px',overflowY:'auto'}});
@@ -1529,7 +1591,7 @@ function rBacktestPage(){
         });
         wrap5.appendChild(tbl5);s5.appendChild(wrap5);
       }else{
-        s5.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginTop:'12px',textAlign:'center'}},'لا توجد صفقات لهذه العملة بهذه الإعدادات خلال الفترة المخزّنة.'));
+        s5.appendChild(el('div',{style:{fontSize:'12px',color:'var(--text2)',marginTop:'12px',textAlign:'center'}},'لا توجد صفقات بهذه الإعدادات والأنواع المختارة خلال الفترة المخزّنة.'));
       }
     }
   }
