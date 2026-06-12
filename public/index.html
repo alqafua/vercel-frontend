@@ -121,10 +121,22 @@ function getServerUrl(){return(localStorage.getItem('rsi_server')||'').replace(/
 function getApiUrl(p){const b=getServerUrl();return b?b+p:p;}
 function getWsUrl(){const b=getServerUrl();const base=b?b.replace('https://','wss://').replace('http://','ws://'):(location.protocol==='https:'?'wss':'ws')+'://'+location.host;return base+'?token='+(C.token||localStorage.getItem('rsi_token')||'');}
 function needsSetup(){return(location.hostname.includes('vercel.app')||location.hostname.includes('vercel.sh'))&&localStorage.getItem('rsi_server')===null;}
-const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxChatBT:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
+const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},symbolSettings:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxChatBT:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
 const BT_TFS=['1h','4h'];
 const REV_LOOKBACK=5, REV_THRESHOLD=3;
 const BT_OPT_FIELDS=['interval','mode','maPeriod','revMode','revCount','enableDiv','sigQueueFilters','trSon','trLon','trSstart','trSgap','trLstart','trLgap','ema200FilterOn','stFilterOn','cxTP1','cxSLon','cxSL','cxTP2on','cxTP2','cxEntry2on','cxEntry2Dist','cxTrailTp','cxTrailPct','cxBEon','dirFilter','cxLev'];
+// الحقول المسموح بتخصيصها لكل عملة على حدة (مطابقة لـ SYMBOL_OVERRIDE_FIELDS في السيرفر)
+const SYMBOL_OVERRIDE_FIELDS=['mode','maPeriod','revMode','revCount','enableDiv','dirFilter','sigQueueFilters','sigFilters','trSon','trSstart','trSgap','trLon','trLstart','trLgap','ema200FilterOn','stFilterOn','cxMargin','cxLev','cxAmt','cxSLon','cxSL','cxTP1','cxTP1Amt','cxTP2on','cxTP2','cxTP2Amt','cxEntry2on','cxEntry2Dist','cxEntry2Amt','cxEntry3on','cxEntry3Dist','cxEntry3Amt','cxTrailTp','cxTrailPct','cxBEon'];
+let symSetSym='',symSetDraft=null;
+function selectSymForSettings(sym){
+  symSetSym=sym;
+  if(!sym){symSetDraft=null;return;}
+  const ov=(C.symbolSettings&&C.symbolSettings[sym])||{};
+  const draft={...C.settings,...ov};
+  draft.sigFilters={...(C.settings.sigFilters||{}),...(ov.sigFilters||{})};
+  draft.sigQueueFilters={...(C.settings.sigQueueFilters||{}),...(ov.sigQueueFilters||{})};
+  symSetDraft=draft;
+}
 let settingsTab='cornix',showForm=false,formAccId=null,showLog=false,showDCA=false,dcaSym='',dcaSide='LONG';
 let showManualOrder=false,manualOrderAccId=null,reportAccId=null;
 let fd={name:'',apiKey:'',apiSecret:'',sizeRatio:'1',tag:'personal',isMaster:false,copyExisting:false};
@@ -273,6 +285,7 @@ function handleServerMsg(msg){
       return;
     case 'progress':C.progress=msg.data;break;
     case 'settings':C.settings={...C.settings,...msg.data};break;
+    case 'symbolSettings':C.symbolSettings=msg.data||{};if(symSetSym)selectSymForSettings(symSetSym);needRender=true;break;
     case 'alerts':C.alerts=msg.data;needRender=true;break;
     case 'trades':C.openTrades=msg.data;needRender=true;break;
     case 'closedTrades':C.closedTrades=msg.data;break;
@@ -306,7 +319,10 @@ function handleServerMsg(msg){
       C.btProgress=msg.data;
       if(msg.data.phase==='busy'){C.btDownloading=false;C.btOptimizing=false;showNotif('⏳ هناك عملية شغّالة بالفعل');needRender=true;break;}
       if(msg.data.phase==='stopping')return;
-      if(C.page==='backtest'&&updateBtProgress())return;
+      // إذا لم نكن في صفحة Backtest: حدّث الحالة فقط بدون إعادة رسم الصفحة الحالية
+      // (كان يسبب اختفاء/فلاش الشاشة بشكل متكرر أثناء عمل الفحص/الأوبتيمايزر في الخلفية)
+      if(C.page!=='backtest')return;
+      if(updateBtProgress())return;
       needRender=true;break;
     case 'btDownloadDone':
       C.btDownloading=false;C.btProgress=null;
@@ -534,7 +550,7 @@ function rSysStatusPill(){
   return pill;
 }
 function rNav(){const nav=el('div',{className:'navbar'});nav.appendChild(el('button',{className:'ntab '+(C.page==='dashboard'?'t-dash':''),onClick:()=>{C.page='dashboard';render();}},'📊 الداشبورد'));const sb=el('button',{className:'ntab '+(C.page==='subscribers'?'t-sub':''),onClick:()=>{C.page='subscribers';render();}});sb.appendChild(document.createTextNode('🪞 المشتركون'));if(C.accounts.length)sb.appendChild(el('span',{className:'nbadge'},String(C.accounts.length)));if(C.waitQueue&&C.waitQueue.length)sb.appendChild(el('span',{className:'nbadge',style:{background:'var(--orange)',marginRight:'2px'}},String(C.waitQueue.length)));nav.appendChild(sb);nav.appendChild(el('button',{className:'ntab '+(C.page==='backtest'?'t-bt':''),onClick:()=>{C.page='backtest';send('btInfo',{});render();}},'🔬 Backtest'));nav.appendChild(el('button',{className:'ntab '+(C.page==='settings'?'t-set':''),onClick:()=>{C.page='settings';render();}},'⚙️ الإعدادات'));const nr=el('div',{className:'nav-right'});const pill=el('div',{className:'copy-pill '+(C.copyOn?'on':'off'),onClick:()=>send('toggleCopy')});pill.appendChild(el('span',{className:'cpd '+(C.copyOn?'on':'off')}));pill.appendChild(document.createTextNode(C.copyOn?'نشط':'Copy'));nr.appendChild(pill);nr.appendChild(el('span',{className:'ws-ind '+(C.wsConn?'on':'off')},C.wsConn?'🟢 متصل':'🔴 منقطع'));nav.appendChild(nr);return nav;}
-function rSettingsPage(){const page=el('div',{className:'set-page'});page.appendChild(el('div',{className:'set-title'},'⚙️ الإعدادات'));const tabs=el('div',{className:'set-tabs'});[['cornix','⚙️ Cornix'],['telegram','📤 تلغرام'],['trailing','🟣 Trailing RSI'],['liquidity','💧 السيولة'],['scanner','🔍 السكانر']].forEach(([k,lb])=>{tabs.appendChild(el('button',{className:'set-tab '+(settingsTab===k?'active':''),onClick:()=>{settingsTab=k;render();}},lb));});page.appendChild(tabs);
+function rSettingsPage(){const page=el('div',{className:'set-page'});page.appendChild(el('div',{className:'set-title'},'⚙️ الإعدادات'));const tabs=el('div',{className:'set-tabs'});[['cornix','⚙️ Cornix'],['telegram','📤 تلغرام'],['trailing','🟣 Trailing RSI'],['liquidity','💧 السيولة'],['scanner','🔍 السكانر'],['symbols','🪙 لكل عملة']].forEach(([k,lb])=>{tabs.appendChild(el('button',{className:'set-tab '+(settingsTab===k?'active':''),onClick:()=>{settingsTab=k;render();}},lb));});page.appendChild(tabs);
 const S=(t)=>{const s=el('div',{className:'set-section'});s.appendChild(el('div',{className:'set-sec-title'},t));return s;};
 const G=()=>el('div',{className:'set-grid'});
 const F=(label,type,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type,value:String(C.settings[key]||''),...ex});i.onchange=()=>{C.settings[key]=type==='number'?parseFloat(i.value)||0:i.value;};f.appendChild(i);return f;};
@@ -636,6 +652,161 @@ if(settingsTab==='scanner'){
   sST.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px'}},'إذا فعّلت EMA و SuperTrend معاً — الإشارة تحتاج موافقة الاثنين (AND)'));
   page.appendChild(sST);
   page.appendChild(SaveBtn());
+}
+if(settingsTab==='symbols'){
+  const sIntro=S('🪙 إعدادات خاصة لكل عملة');
+  sIntro.appendChild(el('div',{className:'set-info'},'اختر عملة وحدّد لها إعدادات مختلفة عن الإعدادات العامة — إشارات هذه العملة فقط ستعتمد هذه الإعدادات. (الفريم الزمني وفلاتر BTC — الفريم/الفترة/المضاعف — تبقى من الإعدادات العامة دائماً)'));
+  const savedSyms=Object.keys(C.symbolSettings||{});
+  if(savedSyms.length){
+    const list=el('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px',marginTop:'10px'}});
+    savedSyms.forEach(sym=>{
+      const active=symSetSym===sym;
+      const chip=el('button',{className:'btn',style:{fontSize:'11px',padding:'4px 10px',background:active?'rgba(0,229,255,.15)':'rgba(46,213,115,.1)',borderColor:active?'var(--accent)':'var(--green)',color:active?'var(--accent)':'var(--green)',fontWeight:'700'},onClick:()=>{selectSymForSettings(sym);render();}},'✅ '+sym);
+      list.appendChild(chip);
+    });
+    sIntro.appendChild(list);
+  }else{
+    sIntro.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px'}},'لا توجد عملات لها إعدادات خاصة حالياً.'));
+  }
+  const pickF=el('div',{className:'set-field',style:{marginTop:'12px'}});
+  pickF.appendChild(el('label',{},'اختر عملة'));
+  const sel=el('select',{});
+  sel.appendChild(el('option',{value:''},'— اختر عملة —'));
+  (C.symbols||[]).forEach(s=>{const o=el('option',{value:s},s);if(symSetSym===s)o.setAttribute('selected','');sel.appendChild(o);});
+  sel.onchange=()=>{selectSymForSettings(sel.value);render();};
+  pickF.appendChild(sel);
+  sIntro.appendChild(pickF);
+  page.appendChild(sIntro);
+
+  if(symSetSym&&symSetDraft){
+    const PS=symSetDraft;
+    const hasOverride=!!(C.symbolSettings?.[symSetSym]&&Object.keys(C.symbolSettings[symSetSym]).length);
+    const statusBox=el('div',{style:{margin:'10px 0',padding:'10px 14px',borderRadius:'10px',background:hasOverride?'rgba(46,213,115,.08)':'rgba(255,255,255,.03)',border:'1px solid '+(hasOverride?'rgba(46,213,115,.3)':'var(--border)'),fontSize:'12px',fontWeight:'700',color:hasOverride?'var(--green)':'var(--text2)'}});
+    statusBox.textContent=hasOverride?('✅ '+symSetSym+' — لديها إعدادات خاصة محفوظة، والإشارات تعتمدها الآن'):('⚪ '+symSetSym+' — تستخدم الإعدادات العامة حالياً (لم تُحفظ إعدادات خاصة بعد)');
+    page.appendChild(statusBox);
+
+    const PF=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'number',value:String(PS[key]),...ex});i.onchange=()=>{PS[key]=parseFloat(i.value)||0;};f.appendChild(i);return f;};
+    const PFT=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'text',value:String(PS[key]||''),...ex});i.onchange=()=>{PS[key]=i.value;};f.appendChild(i);return f;};
+    const PFS=(label,key,opts)=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const sl=el('select',{});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(String(PS[key])===v)o.setAttribute('selected','');sl.appendChild(o);});sl.onchange=()=>{PS[key]=sl.value;render();};f.appendChild(sl);return f;};
+    const PTOG=(title,subs,key)=>{const on=!!PS[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{PS[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
+
+    const ps1=S('📡 المؤشر والاتجاه');const pg1=G();
+    pg1.appendChild(PFS('المؤشر','mode',[['RSI','📈 RSI خام'],['SMA','🔮 SMA على RSI'],['EMA','⚡ EMA على RSI']]));
+    if(PS.mode!=='RSI')pg1.appendChild(PF('فترة MA','maPeriod',{min:'2',max:'50',step:'1'}));
+    pg1.appendChild(PFS('فلتر الاتجاه','dirFilter',[['all','🌐 الكل'],['long','🟢 LONG فقط'],['short','🔴 SHORT فقط']]));
+    ps1.appendChild(pg1);page.appendChild(ps1);
+
+    const ps2=S('⚙️ خيارات الإشارة');const pg2=G();
+    pg2.appendChild(PFS('وضع التكرار','revMode',[['candles','شموع'],['rsi','RSI']]));
+    pg2.appendChild(PF('عدد التكرار','revCount',{min:'1',max:'10',step:'1'}));
+    ps2.appendChild(pg2);
+    ps2.appendChild(el('div',{style:{marginTop:'10px'}}));
+    ps2.appendChild(PTOG('فلتر الدايفرجنس',['مفعّل — إشارات أقل لكن أدق','معطّل — كل الإشارات'],'enableDiv'));
+    page.appendChild(ps2);
+
+    if(!PS.sigFilters)PS.sigFilters={ob:true,os:true,conf:true,trail:true,queue:true};
+    const psigF=PS.sigFilters;
+    const ps3=S('📤 أنواع الإشارات التي تُرسل على تلغرام لهذه العملة');
+    const mkPSigBtn=(label,key,sub)=>{
+      const isOn=psigF[key]!==false;
+      const row=el('div',{className:'set-toggle '+(isOn?'on':''),style:{marginBottom:'8px'},onClick:()=>{psigF[key]=!isOn;render();}});
+      const knob=el('div',{className:'stog-knob '+(isOn?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);
+      const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},label));lbl.appendChild(el('div',{className:'stog-sub'},isOn?'✅ '+(sub||'يُرسل على تلغرام'):'❌ لا يُرسل'));row.appendChild(lbl);return row;
+    };
+    ps3.appendChild(mkPSigBtn('🔴 تشبع بيع (تجاوز 70 / نزل من 70)','ob'));
+    ps3.appendChild(mkPSigBtn('🔵 تشبع شراء (نزل من 30 / صعد من 30)','os'));
+    ps3.appendChild(mkPSigBtn('⚡ إشارات أكيدة (داخل المنطقة)','conf'));
+    ps3.appendChild(mkPSigBtn('🟣 Trailing RSI (انعكاسات تتبعية)','trail'));
+    ps3.appendChild(mkPSigBtn('⏳ قائمة الانتظار الذكية (إرسال تلقائي)','queue','يُرسل للتلغرام عند الإرسال من القائمة'));
+    page.appendChild(ps3);
+
+    if(!PS.sigQueueFilters)PS.sigQueueFilters={ob:true,os:true,conf:true,trail:true};
+    const psqF=PS.sigQueueFilters;
+    const ps4=S('⏳ أنواع الإشارات التي تدخل قائمة الانتظار لهذه العملة');
+    const mkPQBtn=(label,key)=>{
+      const isOn=psqF[key]!==false;
+      const row=el('div',{className:'set-toggle '+(isOn?'on':''),style:{marginBottom:'8px'},onClick:()=>{psqF[key]=!isOn;render();}});
+      const knob=el('div',{className:'stog-knob '+(isOn?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);
+      const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},label));lbl.appendChild(el('div',{className:'stog-sub'},isOn?'✅ تدخل قائمة الانتظار':'❌ لا تدخل القائمة'));row.appendChild(lbl);return row;
+    };
+    ps4.appendChild(mkPQBtn('🔴 تشبع بيع (تجاوز 70 / نزل من 70)','ob'));
+    ps4.appendChild(mkPQBtn('🔵 تشبع شراء (نزل من 30 / صعد من 30)','os'));
+    ps4.appendChild(mkPQBtn('⚡ إشارات أكيدة (داخل المنطقة)','conf'));
+    ps4.appendChild(mkPQBtn('🟣 Trailing RSI (انعكاسات تتبعية)','trail'));
+    page.appendChild(ps4);
+
+    const ps5=S('🟣 Trailing RSI لهذه العملة');
+    ps5.appendChild(PTOG('SHORT — انعكاس من فوق',['مفعّل ✅','معطّل ❌'],'trSon'));
+    if(PS.trSon){const pg5a=G();pg5a.style.marginTop='10px';pg5a.appendChild(PF('ابدأ التتبع عند RSI ≥','trSstart',{step:'0.5',min:'50',max:'100'}));pg5a.appendChild(PF('فارق الانعكاس (نقطة)','trSgap',{step:'0.5',min:'0.5'}));ps5.appendChild(pg5a);}
+    ps5.appendChild(el('div',{style:{marginTop:'10px'}}));
+    ps5.appendChild(PTOG('LONG — انعكاس من تحت',['مفعّل ✅','معطّل ❌'],'trLon'));
+    if(PS.trLon){const pg5b=G();pg5b.style.marginTop='10px';pg5b.appendChild(PF('ابدأ التتبع عند RSI ≤','trLstart',{step:'0.5',min:'0',max:'50'}));pg5b.appendChild(PF('فارق الانعكاس (نقطة)','trLgap',{step:'0.5',min:'0.5'}));ps5.appendChild(pg5b);}
+    page.appendChild(ps5);
+
+    const ps6=S('📈 فلاتر اتجاه السوق (BTC) لهذه العملة');
+    ps6.appendChild(el('div',{className:'set-info'},'الفريم الزمني وفترة/مضاعف SuperTrend تبقى من الإعدادات العامة — هنا فقط تفعيل/تعطيل الفلتر لهذه العملة.'));
+    ps6.appendChild(PTOG('فلتر EMA 200',['مفعّل — لهذه العملة فقط','معطّل'],'ema200FilterOn'));
+    ps6.appendChild(el('div',{style:{marginTop:'10px'}}));
+    ps6.appendChild(PTOG('فلتر SuperTrend',['مفعّل — لهذه العملة فقط','معطّل'],'stFilterOn'));
+    page.appendChild(ps6);
+
+    const ps7=S('💼 إدارة الصفقة (Cornix) لهذه العملة');
+    const pg7a=G();
+    pg7a.appendChild(PFS('الهامش','cxMargin',[['Isolated','Isolated'],['Cross','Cross']]));
+    pg7a.appendChild(PF('الرافعة (1-125)','cxLev',{min:'1',max:'125',step:'1'}));
+    pg7a.appendChild(PFT('حجم الدخول','cxAmt',{placeholder:'مثال: 5%'}));
+    ps7.appendChild(pg7a);
+
+    ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
+    ps7.appendChild(PTOG('وقف الخسارة',['مفعّل ✅ — يظهر في رسالة التلغرام','معطّل ❌ — لن يظهر SL'],'cxSLon'));
+    if(PS.cxSLon){const pg7b=G();pg7b.style.marginTop='10px';pg7b.appendChild(PF('نسبة SL %','cxSL',{step:'0.1',min:'0.1'}));ps7.appendChild(pg7b);}
+
+    ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
+    ps7.appendChild(PTOG('هدفين TP1 + TP2',['هدفين مفعّلين','هدف واحد فقط'],'cxTP2on'));
+    const pg7c=G();pg7c.style.marginTop='10px';
+    if(!PS.cxTP2on){pg7c.appendChild(PF('TP نسبة %','cxTP1',{step:'0.1',min:'0.1'}));}
+    else{pg7c.appendChild(PF('TP1 نسبة %','cxTP1',{step:'0.1'}));pg7c.appendChild(PF('TP1 كمية %','cxTP1Amt',{step:'1',min:'1',max:'100'}));pg7c.appendChild(PF('TP2 نسبة %','cxTP2',{step:'0.1'}));pg7c.appendChild(PF('TP2 كمية %','cxTP2Amt',{step:'1',min:'1',max:'100'}));}
+    ps7.appendChild(pg7c);
+
+    ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
+    ps7.appendChild(PTOG('الدخول الثاني',['مفعّل ✅','معطّل ❌'],'cxEntry2on'));
+    if(PS.cxEntry2on){const pg7d=G();pg7d.style.marginTop='10px';pg7d.appendChild(PF('مسافة الدخول الثاني %','cxEntry2Dist',{step:'0.1',min:'0.1'}));pg7d.appendChild(PF('كمية الدخول الثاني %','cxEntry2Amt',{step:'1',min:'1',max:'100'}));ps7.appendChild(pg7d);}
+
+    ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
+    ps7.appendChild(PTOG('الدخول الثالث',['مفعّل ✅','معطّل ❌'],'cxEntry3on'));
+    if(PS.cxEntry3on){const pg7e=G();pg7e.style.marginTop='10px';pg7e.appendChild(PF('مسافة الدخول الثالث %','cxEntry3Dist',{step:'0.1',min:'0.1'}));pg7e.appendChild(PF('كمية الدخول الثالث %','cxEntry3Amt',{step:'1',min:'1',max:'100'}));ps7.appendChild(pg7e);}
+
+    ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
+    const pg7f=G();
+    pg7f.appendChild(PFS('Trailing TP','cxTrailTp',[['on','✅ مفعّل'],['off','❌ معطّل']]));
+    pg7f.appendChild(PF('Trailing TP %','cxTrailPct',{step:'0.1',min:'0.1'}));
+    ps7.appendChild(pg7f);
+    ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
+    ps7.appendChild(PTOG('Break Even',['مفعّل — SL يتحرك لنقطة التعادل بعد TP1','معطّل'],'cxBEon'));
+    page.appendChild(ps7);
+
+    const btnRow=el('div',{style:{display:'flex',gap:'10px',marginTop:'14px',flexWrap:'wrap'}});
+    const saveBtn=el('button',{className:'set-save-btn',style:{flex:'1'}});
+    saveBtn.textContent='💾 حفظ إعدادات '+symSetSym;
+    saveBtn.onclick=()=>{
+      const clean={};
+      SYMBOL_OVERRIDE_FIELDS.forEach(k=>{if(PS[k]!==undefined)clean[k]=PS[k];});
+      send('setSymbolSettings',{symbol:symSetSym,settings:clean});
+      showNotif('✅ تم حفظ إعدادات '+symSetSym+' — إشاراتها ستعتمدها الآن');
+    };
+    btnRow.appendChild(saveBtn);
+    if(hasOverride){
+      const rmBtn=el('button',{className:'set-save-btn',style:{flex:'1',background:'rgba(255,71,87,.12)',color:'var(--red)',border:'1px solid var(--red)'}});
+      rmBtn.textContent='🗑 إزالة (رجوع للإعدادات العامة)';
+      rmBtn.onclick=()=>{
+        if(!confirm('إزالة الإعدادات الخاصة لـ '+symSetSym+'؟'))return;
+        send('removeSymbolSettings',{symbol:symSetSym});
+        showNotif('🗑 تمت الإزالة — '+symSetSym+' ستستخدم الإعدادات العامة الآن');
+      };
+      btnRow.appendChild(rmBtn);
+    }
+    page.appendChild(btnRow);
+  }
 }
 // ── تصدير واستعادة ──────────────────────────────
 const bakSec=S('💾 تصدير واستعادة البيانات');
@@ -931,6 +1102,11 @@ function downloadPerSymbolBackup(){
   const payload={bySymbol:out,exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='افضل-اعداد-لكل-عمله.json';a.click();
+}
+function downloadSymbolSettings(symbol,settings){
+  const payload={symbol,settings,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=symbol+'_settings.json';a.click();
 }
 // ── شارت التحقق (يطابق TradingView): شموع + المؤشر + الإشارات + الصفقات ──
 function cloneBtSettings(settings){
@@ -1598,6 +1774,13 @@ function rBacktestPage(){
       }
       recalcBtn.onclick=()=>requestBtChart(req.symbol,RS,req);
       setBox.appendChild(recalcBtn);
+
+      const dlBtn=el('button',{className:'set-save-btn',style:{marginTop:'8px',width:'100%',background:'var(--bg3)',color:'var(--text)',border:'1px solid var(--border)'}});
+      dlBtn.textContent='⬇️ تحميل إعدادات '+(req.symbol||'هذه العملة')+' (ملف JSON)';
+      dlBtn.disabled=!req.symbol;
+      dlBtn.onclick=()=>downloadSymbolSettings(req.symbol,RS);
+      setBox.appendChild(dlBtn);
+
       s5.appendChild(setBox);
     }
 
