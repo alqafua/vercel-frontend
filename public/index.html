@@ -121,7 +121,7 @@ function getServerUrl(){return(localStorage.getItem('rsi_server')||'').replace(/
 function getApiUrl(p){const b=getServerUrl();return b?b+p:p;}
 function getWsUrl(){const b=getServerUrl();const base=b?b.replace('https://','wss://').replace('http://','ws://'):(location.protocol==='https:'?'wss':'ws')+'://'+location.host;return base+'?token='+(C.token||localStorage.getItem('rsi_token')||'');}
 function needsSetup(){return(location.hostname.includes('vercel.app')||location.hostname.includes('vercel.sh'))&&localStorage.getItem('rsi_server')===null;}
-const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},symbolSettings:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxChatBT:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
+const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},symbolSettings:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxChatBT:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btUpdating:false,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
 const BT_TFS=['1h','4h'];
 const REV_LOOKBACK=5, REV_THRESHOLD=3;
 const BT_OPT_FIELDS=['interval','mode','maPeriod','revMode','revCount','enableDiv','sigQueueFilters','trSon','trLon','trSstart','trSgap','trLstart','trLgap','ema200FilterOn','stFilterOn','cxTP1','cxSLon','cxSL','cxTP2on','cxTP2','cxEntry2on','cxEntry2Dist','cxTrailTp','cxTrailPct','cxBEon','dirFilter','cxLev'];
@@ -262,8 +262,8 @@ function handleServerMsg(msg){
       Object.assign(C,msg.data);
       if(msg.data.settings)C.settings={...C.settings,...msg.data.settings};
       if(msg.data.settings?.dirFilter&&msg.data.settings.dirFilter!=='all')C.filter=msg.data.settings.dirFilter;
-      if(!C.btBusy&&(C.btDownloading||C.btRunning||C.btOptimizing||C.btOptimizingSym)){
-        C.btDownloading=false;C.btRunning=false;C.btOptimizing=false;C.btOptimizingSym=false;C.btProgress=null;
+      if(!C.btBusy&&(C.btDownloading||C.btUpdating||C.btRunning||C.btOptimizing||C.btOptimizingSym)){
+        C.btDownloading=false;C.btUpdating=false;C.btRunning=false;C.btOptimizing=false;C.btOptimizingSym=false;C.btProgress=null;
       }
       needRender=true;
       setTimeout(rSysStatusBox,100);
@@ -321,7 +321,7 @@ function handleServerMsg(msg){
     case 'btInfo':C.btInfo=msg.data;needRender=true;break;
     case 'btProgress':
       C.btProgress=msg.data;
-      if(msg.data.phase==='busy'){C.btDownloading=false;C.btOptimizing=false;showNotif('⏳ هناك عملية شغّالة بالفعل');needRender=true;break;}
+      if(msg.data.phase==='busy'){C.btDownloading=false;C.btUpdating=false;C.btOptimizing=false;showNotif('⏳ هناك عملية شغّالة بالفعل');needRender=true;break;}
       if(msg.data.phase==='stopping')return;
       // إذا لم نكن في صفحة Backtest: حدّث الحالة فقط بدون إعادة رسم الصفحة الحالية
       // (كان يسبب اختفاء/فلاش الشاشة بشكل متكرر أثناء عمل الفحص/الأوبتيمايزر في الخلفية)
@@ -329,8 +329,8 @@ function handleServerMsg(msg){
       if(updateBtProgress())return;
       needRender=true;break;
     case 'btDownloadDone':
-      C.btDownloading=false;C.btProgress=null;
-      showNotif(msg.data.ok?'✅ اكتمل تنزيل البيانات':'❌ '+(msg.data.error||'فشل التنزيل'));
+      C.btDownloading=false;C.btUpdating=false;C.btProgress=null;
+      showNotif(msg.data.ok?'✅ اكتملت العملية بنجاح':'❌ '+(msg.data.error||'فشلت العملية'));
       send('btInfo',{});
       needRender=true;break;
     case 'btResult':C.btRunning=false;C.btResult=msg.data;needRender=true;break;
@@ -1070,6 +1070,7 @@ const btns=el('div',{style:{display:'flex',gap:'8px'}});const testBtn=el('button
 // ══════════════ Backtest & المُحسِّن ══════════════
 function fmtTime(ms){if(!ms||ms<0)return '—';const s=Math.round(ms/1000);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60;return (h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(ss).padStart(2,'0');}
 function fmtPct(v){const n=parseFloat(v);if(!isFinite(n))return v+'%';const a=Math.abs(n);const sign=n<0?'-':'';if(a>=1e9)return sign+(a/1e9).toFixed(2)+'B%';if(a>=1e6)return sign+(a/1e6).toFixed(2)+'M%';if(a>=1e3)return sign+(a/1e3).toFixed(2)+'K%';return n+'%';}
+function fmtNum(v){const n=parseFloat(v);if(!isFinite(n))return String(v);const a=Math.abs(n);const sign=n<0?'-':'';if(a>=1e9)return sign+(a/1e9).toFixed(2)+'B';if(a>=1e6)return sign+(a/1e6).toFixed(2)+'M';if(a>=1e3)return sign+(a/1e3).toFixed(2)+'K';return String(n);}
 function drawBtEquity(canvas,eq){const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height,n=eq.length;ctx.clearRect(0,0,W,H);if(n<2)return;const mn=Math.min(...eq),mx=Math.max(...eq),rng=(mx-mn)||1;ctx.beginPath();ctx.lineWidth=2;ctx.strokeStyle=eq[n-1]>=eq[0]?'#2ed573':'#ff4757';eq.forEach((v,i)=>{const x=i/(n-1)*W,y=H-((v-mn)/rng)*(H-10)-5;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();}
 function downloadBtBackup(optSet){
   if(!optSet){showNotif('❌ لا يوجد إعداد للتحميل');return;}
@@ -1220,12 +1221,12 @@ function btDlText(p){
 }
 function updateBtProgress(){
   const p=C.btProgress;if(!p)return false;
-  if(p.kind==='download'){
+  if(p.kind==='download'||p.kind==='update'){
     const fill=document.getElementById('bt-dl-fill'),txt=document.getElementById('bt-dl-txt');
     if(!fill||!txt)return false;
     const pct=p.totalUnits?Math.round(p.doneUnits/p.totalUnits*100):0;
     fill.style.width=pct+'%';
-    txt.textContent=btDlText(p);
+    txt.textContent=(p.kind==='update'?'🔄 ':'⬇️ ')+btDlText(p);
     return true;
   }
   if(p.kind==='optimize'){
@@ -1275,22 +1276,31 @@ function rBacktestPage(){
   const s1=el('div',{className:'set-section'});
   const daysI=el('input',{type:'number',value:String(C.btDays||90),min:'7',max:'730'});
   daysI.onchange=()=>C.btDays=parseInt(daysI.value)||90;
+  const updBtn=el('button',{className:'set-save-btn',style:{width:'auto',padding:'8px 14px',fontSize:'12px',marginTop:'0',background:'var(--blue)'}});
+  updBtn.disabled=!!(busy||C.btDownloading||C.btUpdating);
+  updBtn.textContent=C.btUpdating?'⏳ جارٍ التحديث...':(busy?'⏳ عملية أخرى تعمل...':'🔄 تحديث (الجديد فقط)');
+  updBtn.onclick=()=>{
+    if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
+    C.btUpdating=true;C.btProgress={kind:'update',doneUnits:0,totalUnits:0};
+    send('btUpdate',{});render();
+  };
   const dlBtn=el('button',{className:'set-save-btn',style:{width:'auto',padding:'8px 14px',fontSize:'12px',marginTop:'0'}});
-  dlBtn.disabled=!!(busy||C.btDownloading);
-  dlBtn.textContent=C.btDownloading?'⏳ جارٍ التنزيل...':(busy?'⏳ عملية أخرى تعمل...':'⬇️ تنزيل / تحديث البيانات');
+  dlBtn.disabled=!!(busy||C.btDownloading||C.btUpdating);
+  dlBtn.textContent=C.btDownloading?'⏳ جارٍ التنزيل...':(busy?'⏳ عملية أخرى تعمل...':'⬇️ تنزيل من جديد');
   dlBtn.onclick=()=>{
     if(busy){showNotif('⏳ هناك عملية شغّالة بالفعل');return;}
+    if(!confirm('سيُعاد تنزيل كل البيانات من الصفر (يستغرق وقتاً أطول من التحديث). متابعة؟'))return;
     C.btDownloading=true;C.btProgress={kind:'download',doneUnits:0,totalUnits:0};
     send('btDownload',{days:parseInt(daysI.value)||90});render();
   };
-  s1.appendChild(SH('📥 البيانات','s1',dlBtn));
-  if(C.btProgress?.kind==='download'){
+  s1.appendChild(SH('📥 البيانات','s1',[updBtn,dlBtn]));
+  if(C.btProgress?.kind==='download'||C.btProgress?.kind==='update'){
     const p=C.btProgress;const pct=p.totalUnits?Math.round(p.doneUnits/p.totalUnits*100):0;
     const dlProg=el('div',{style:{marginTop:'10px'}});
     const dlBar=el('div',{className:'prog-bar',style:{height:'8px',borderRadius:'4px',overflow:'hidden'}});
     const dlFill=el('div',{id:'bt-dl-fill',className:'prog-fill',style:{width:pct+'%'}});
     dlBar.appendChild(dlFill);dlProg.appendChild(dlBar);
-    dlProg.appendChild(el('div',{id:'bt-dl-txt',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px'}},btDlText(p)));
+    dlProg.appendChild(el('div',{id:'bt-dl-txt',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px'}},(p.kind==='update'?'🔄 ':'⬇️ ')+btDlText(p)));
     s1.appendChild(dlProg);
   }
   const b1=SBody('s1');
@@ -1514,7 +1524,7 @@ function rBacktestPage(){
       stG2.appendChild(mkS2('صفقات',String(m.trades)));
       stG2.appendChild(mkS2('PF',String(m.profitFactor)));
       stG2.appendChild(mkS2('تراجع',m.maxDrawdownPct+'%','c-red'));
-      stG2.appendChild(mkS2('النقاط',String(b.score)));
+      stG2.appendChild(mkS2('النقاط',fmtNum(b.score)));
       bestBox.appendChild(stG2);
       bestBox.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px'}},`✅ أُرسلت لتلغرام أيضاً. قُيِّم ${C.btOptResult.evaluated} توليفة في ${fmtTime(C.btOptResult.elapsedMs)}.`));
       const bestDetails=el('details',{style:{marginTop:'10px'}});
@@ -1722,7 +1732,7 @@ function rBacktestPage(){
     const titleParts=[];
     if(req.symbol)titleParts.push(req.symbol);
     titleParts.push(`${req.settings.interval} · ${req.settings.mode}${req.settings.mode!=='RSI'?'('+req.settings.maPeriod+')':''}`);
-    if(req.score!=null)titleParts.push('النقاط: '+req.score);
+    if(req.score!=null)titleParts.push('النقاط: '+fmtNum(req.score));
     s5.appendChild(el('div',{style:{fontWeight:'800',color:'var(--accent)',marginTop:'10px'}},titleParts.join(' — ')));
 
     // ── لوحة إعدادات هذا الشارت — قابلة للتعديل، وتعيد حساب الشارت
