@@ -121,7 +121,7 @@ function getServerUrl(){return(localStorage.getItem('rsi_server')||'').replace(/
 function getApiUrl(p){const b=getServerUrl();return b?b+p:p;}
 function getWsUrl(){const b=getServerUrl();const base=b?b.replace('https://','wss://').replace('http://','ws://'):(location.protocol==='https:'?'wss':'ws')+'://'+location.host;return base+'?token='+(C.token||localStorage.getItem('rsi_token')||'');}
 function needsSetup(){return(location.hostname.includes('vercel.app')||location.hostname.includes('vercel.sh'))&&localStorage.getItem('rsi_server')===null;}
-const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},symbolSettings:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxChatBT:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btUpdating:false,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
+const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},symbolSettings:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxChatBT:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btUpdating:false,btImporting:false,btImportPct:0,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false}};
 const BT_TFS=['1h','4h'];
 const REV_LOOKBACK=5, REV_THRESHOLD=3;
 const BT_OPT_FIELDS=['interval','mode','maPeriod','revMode','revCount','enableDiv','sigQueueFilters','trSon','trLon','trSstart','trSgap','trLstart','trLgap','ema200FilterOn','stFilterOn','cxTP1','cxSLon','cxSL','cxTP2on','cxTP2','cxEntry2on','cxEntry2Dist','cxTrailTp','cxTrailPct','cxBEon','dirFilter','cxLev'];
@@ -1219,6 +1219,11 @@ function btDlText(p){
   if(p.phase==='wait')return `⏳ Binance ${p.status} — انتظار ${p.waitSec}ث (محاولة ${p.attempt}) — ${p.sym||''} ${p.tf||''}`;
   return `${p.doneUnits}/${p.totalUnits} — ${p.sym||''} ${p.tf||''} ${p.candles!=null?'('+p.candles+' شمعة)':''} ${p.error?'⚠️'+p.error:''}`;
 }
+function updateImportProgress(){
+  const fill=document.getElementById('bt-imp-fill'),txt=document.getElementById('bt-imp-txt');
+  if(fill)fill.style.width=(C.btImportPct||0)+'%';
+  if(txt)txt.textContent=`⏳ جارٍ رفع الملف... ${C.btImportPct||0}%`;
+}
 function updateBtProgress(){
   const p=C.btProgress;if(!p)return false;
   if(p.kind==='download'||p.kind==='update'){
@@ -1321,21 +1326,47 @@ function rBacktestPage(){
   impInput.onchange=async(e)=>{
     const file=e.target.files[0];if(!file)return;
     if(!confirm('⚠️ سيُضاف/يُستبدل بيانات الباك تيست المخزّنة بالملف. متابعة؟')){impInput.value='';return;}
+    C.btImporting=true;C.btImportPct=0;render();
     try{
       const buf=await file.arrayBuffer();
       const token=C.token||localStorage.getItem('rsi_token')||'';
-      const r=await fetch(getApiUrl('/api/backtest/import'),{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/octet-stream'},body:buf});
-      const d=await r.json();
-      if(d.ok){showNotif('✅ تم استيراد '+d.count+' ملف');send('btInfo',{});}
-      else showNotif('❌ '+(d.error||'فشل الاستيراد'));
+      await new Promise((resolve,reject)=>{
+        const xhr=new XMLHttpRequest();
+        xhr.open('POST',getApiUrl('/api/backtest/import'));
+        xhr.setRequestHeader('Authorization','Bearer '+token);
+        xhr.setRequestHeader('Content-Type','application/octet-stream');
+        xhr.upload.onprogress=(ev)=>{
+          if(ev.lengthComputable){C.btImportPct=Math.round(ev.loaded/ev.total*100);updateImportProgress();}
+        };
+        xhr.onload=()=>{
+          try{
+            const d=JSON.parse(xhr.responseText);
+            if(d.ok){showNotif('✅ تم استيراد '+d.count+' ملف');send('btInfo',{});}
+            else showNotif('❌ '+(d.error||'فشل الاستيراد'));
+          }catch(e){showNotif('❌ استجابة غير صحيحة من السيرفر');}
+          resolve();
+        };
+        xhr.onerror=()=>{showNotif('❌ فشل الاتصال بالسيرفر');resolve();};
+        xhr.send(buf);
+      });
     }catch(err){showNotif('❌ '+err.message);}
+    C.btImporting=false;C.btImportPct=0;render();
     impInput.value='';
   };
   const imBtn=el('button',{className:'btn',style:{flex:'1',padding:'12px',background:'rgba(61,159,255,.12)',borderColor:'var(--blue)',color:'var(--blue)',fontWeight:'800',fontSize:'13px'}});
-  imBtn.textContent='📤 رفع بيانات الباك تيست';
+  imBtn.disabled=!!C.btImporting;
+  imBtn.textContent=C.btImporting?`⏳ جارٍ الرفع... ${C.btImportPct||0}%`:'📤 رفع بيانات الباك تيست';
   imBtn.onclick=()=>impInput.click();
   exGrid.appendChild(exBtn);exGrid.appendChild(imBtn);exGrid.appendChild(impInput);
   b1.appendChild(exGrid);
+  if(C.btImporting){
+    const impProg=el('div',{style:{marginTop:'10px'}});
+    const impBar=el('div',{className:'prog-bar',style:{height:'8px',borderRadius:'4px',overflow:'hidden'}});
+    const impFill=el('div',{id:'bt-imp-fill',className:'prog-fill',style:{width:(C.btImportPct||0)+'%'}});
+    impBar.appendChild(impFill);impProg.appendChild(impBar);
+    impProg.appendChild(el('div',{id:'bt-imp-txt',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px'}},`⏳ جارٍ رفع الملف... ${C.btImportPct||0}%`));
+    b1.appendChild(impProg);
+  }
   b1.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',lineHeight:'1.6'}},'حمّل بيانات الشموع المخزّنة لحفظها على هاتفك، وارفعها لاحقاً بدل إعادة التنزيل من الإنترنت.'));
   s1.appendChild(b1);
   page.appendChild(s1);
