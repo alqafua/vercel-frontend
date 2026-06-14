@@ -138,7 +138,7 @@ const RES_PRESETS={
   medium:{label:'🟡 متوسط',minTrades:15,maxDD:12,minPF:1.3,minRespectShort:20,minRespectLong:20,minAvgReversal:0.5},
   strict:{label:'🔴 صارم',minTrades:25,maxDD:8,minPF:1.5,minRespectShort:30,minRespectLong:30,minAvgReversal:1},
 };
-const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},symbolSettings:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxChatBT:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all'},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btUpdating:false,btImporting:false,btImportPct:0,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false},resFiles:[],resAnalysis:null,resSending:false,resFilters:{preset:'loose',minTrades:10,maxDD:15,minPF:1.2,minRespectShort:0,minRespectLong:0,minAvgReversal:0},btOptimizingRespect:false,btRespectResult:null,btOptimizingTuned:false,btTunedResult:null,btMgmtSource:'respect',btOptimizingMgmt:false,btMgmtResult:null,sumPreset:'loose',sumOverrides:{},sumSending:false,btSumDrillSym:null};
+const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},symbolSettings:{},dcaOrders:[],pendingOrders:[],waitQueue:[],sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxSLon:true,cxSL:'2',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxChatBT:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxEntry3on:false,cxEntry3Dist:'4',cxEntry3Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,dirFilter:'all',useSymbolSettings:true,lockFields:{amt:false,lev:false,sl:false,targets:false,entries:false}},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btUpdating:false,btImporting:false,btImportPct:0,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false},resFiles:[],resAnalysis:null,resSending:false,resFilters:{preset:'loose',minTrades:10,maxDD:15,minPF:1.2,minRespectShort:0,minRespectLong:0,minAvgReversal:0},btOptimizingRespect:false,btRespectResult:null,btOptimizingTuned:false,btTunedResult:null,btMgmtSource:'respect',btOptimizingMgmt:false,btMgmtResult:null,sumPreset:'loose',sumOverrides:{},sumSending:false,btSumDrillSym:null};
 const BT_TFS=['1h','4h'];
 const REV_LOOKBACK=5, REV_THRESHOLD=3;
 const MIN_SIG_SAMPLE=10; // أقل عدد إشارات لاعتماد نسبة الاحترام في "الإعداد النهائي المُحسَّن"
@@ -591,6 +591,26 @@ const FS=(label,key,opts)=>{const f=el('div',{className:'set-field'});f.appendCh
 const T=(title,subs,key)=>{const on=C.settings[key]||false;const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{C.settings[key]=!C.settings[key];render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
 const SaveBtn=()=>el('button',{className:'set-save-btn',onClick:()=>{sendSettings(C.settings);showNotif('✅ تم حفظ الإعدادات بنجاح!');}},'\uD83D\uDCBE حفظ الإعدادات');
 if(settingsTab==='cornix'){
+  if(!C.settings.lockFields)C.settings.lockFields={amt:false,lev:false,sl:false,targets:false,entries:false};
+  const s0=S('🧬 نظام إعدادات العملات المخصصة');
+  s0.appendChild(T('استخدام إعدادات كل عملة',['مفعّل ✅ — كل عملة تستخدم إعداداتها الخاصة (المحفوظة/المرفوعة) إن وُجدت لها','معطّل ❌ — جميع العملات تستخدم الإعدادات العامة فقط، حتى لو كانت محفوظة لها إعدادات خاصة'],'useSymbolSettings'));
+  page.appendChild(s0);
+
+  const lf=C.settings.lockFields;
+  const TL=(title,subs,key)=>{const on=!!lf[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{lf[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
+  const sLock=S('🔒 إعدادات ثابتة (تتجاوز إعدادات/ملفات العملات)');
+  sLock.appendChild(el('div',{className:'set-info'},'عند تفعيل أي بند هنا، قيمته تُؤخذ دائمًا من الإعدادات العامة في هذه الصفحة لكل العملات — حتى لو كان للعملة (أو الملف المرفوع في "🪙 لكل عملة") قيمة مختلفة.'));
+  sLock.appendChild(TL('مبلغ الصفقة',['ثابت — من الإعدادات العامة','يتغيّر حسب إعداد كل عملة'],'amt'));
+  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
+  sLock.appendChild(TL('الرافعة',['ثابتة — من الإعدادات العامة','تتغيّر حسب إعداد كل عملة'],'lev'));
+  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
+  sLock.appendChild(TL('وقف الخسارة (SL)',['ثابت — من الإعدادات العامة','يتغيّر حسب إعداد كل عملة'],'sl'));
+  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
+  sLock.appendChild(TL('الأهداف (TP1 + TP2)',['ثابتة — من الإعدادات العامة','تتغيّر حسب إعداد كل عملة'],'targets'));
+  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
+  sLock.appendChild(TL('الدخولات (Entry 2 + Entry 3)',['ثابتة — من الإعدادات العامة','تتغيّر حسب إعداد كل عملة'],'entries'));
+  page.appendChild(sLock);
+
   const s1=S('💼 الأساسيات');const g1=G();g1.appendChild(FS('الهامش','cxMargin',[['Isolated','Isolated'],['Cross','Cross']]));g1.appendChild(F('الرافعة (1-125)','number','cxLev',{min:'1',max:'125',step:'1'}));g1.appendChild(F('حجم الدخول','text','cxAmt',{placeholder:'مثال: 5%'}));s1.appendChild(g1);page.appendChild(s1);
   const s2=S('🛑 وقف الخسارة (SL)');s2.appendChild(T('وقف الخسارة',['مفعّل ✅ — يظهر في رسالة التلغرام','معطّل ❌ — لن يظهر SL'],'cxSLon'));if(C.settings.cxSLon){const g2=G();g2.style.marginTop='10px';g2.appendChild(F('نسبة SL %','number','cxSL',{step:'0.1',min:'0.1',placeholder:'مثال: 2'}));s2.appendChild(g2);}page.appendChild(s2);
   const s3=S('🎯 الأهداف (Take Profit)');s3.appendChild(T('هدفين',['هدفين: TP1 + TP2','هدف واحد فقط'],'cxTP2on'));const g3=G();g3.style.marginTop='10px';if(!C.settings.cxTP2on){g3.appendChild(F('TP نسبة %','number','cxTP1',{step:'0.1',min:'0.1'}));}else{g3.appendChild(F('TP1 نسبة %','number','cxTP1',{step:'0.1'}));g3.appendChild(F('TP1 كمية %','number','cxTP1Amt',{step:'1',min:'1',max:'100'}));g3.appendChild(F('TP2 نسبة %','number','cxTP2',{step:'0.1'}));g3.appendChild(F('TP2 كمية %','number','cxTP2Amt',{step:'1',min:'1',max:'100'}));}s3.appendChild(g3);page.appendChild(s3);
@@ -701,6 +721,34 @@ if(settingsTab==='symbols'){
   }else{
     sIntro.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px'}},'لا توجد عملات لها إعدادات خاصة حالياً.'));
   }
+  const upInput=el('input',{type:'file',accept:'.json',style:{display:'none'}});
+  upInput.onchange=async(e)=>{
+    const file=e.target.files[0];if(!file)return;
+    try{
+      const text=await file.text();
+      const data=JSON.parse(text);
+      if(data.bySymbol&&typeof data.bySymbol==='object'){
+        const n=Object.keys(data.bySymbol).length;
+        if(!n)throw new Error('الملف لا يحتوي على عملات');
+        if(!confirm('سيتم تطبيق الإعدادات الخاصة على '+n+' عملة من هذا الملف. متأكد؟')){upInput.value='';return;}
+        send('setSymbolSettingsBulk',{bySymbol:data.bySymbol});
+        showNotif('✅ تم تطبيق الإعدادات على '+n+' عملة');
+      }else if(data.symbol&&data.settings&&typeof data.settings==='object'){
+        const clean={};
+        SYMBOL_OVERRIDE_FIELDS.forEach(k=>{if(data.settings[k]!==undefined)clean[k]=data.settings[k];});
+        send('setSymbolSettings',{symbol:data.symbol,settings:clean});
+        showNotif('✅ تم تطبيق إعدادات '+data.symbol);
+        if(symSetSym===data.symbol)selectSymForSettings(data.symbol);
+      }else{
+        throw new Error('صيغة الملف غير معروفة');
+      }
+    }catch(err){alert('❌ ملف غير صالح: '+err.message);}
+    upInput.value='';
+  };
+  const upBtn=el('button',{className:'btn',style:{fontSize:'12px',padding:'8px 16px',marginTop:'10px',background:'rgba(0,229,255,.1)',borderColor:'var(--accent)',color:'var(--accent)',fontWeight:'700'},onClick:()=>upInput.click()},'📤 رفع ملف إعدادات (عملة واحدة أو شامل)');
+  sIntro.appendChild(upBtn);sIntro.appendChild(upInput);
+  sIntro.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px'}},'يدعم ملف عملة واحدة، أو ملف شامل (الخلاصة / مؤشر العملة / احترام المؤشر / افضل اعداد لكل عمله) — يُطبَّق على كل عملاته دفعة واحدة.'));
+
   const pickF=el('div',{className:'set-field',style:{marginTop:'12px'}});
   pickF.appendChild(el('label',{},'اختر عملة'));
   const sel=el('select',{});
