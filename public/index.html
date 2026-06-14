@@ -262,6 +262,9 @@ function handleServerMsg(msg){
       Object.assign(C,msg.data);
       if(msg.data.settings)C.settings={...C.settings,...msg.data.settings};
       if(msg.data.settings?.dirFilter&&msg.data.settings.dirFilter!=='all')C.filter=msg.data.settings.dirFilter;
+      if(!C.btBusy&&(C.btDownloading||C.btRunning||C.btOptimizing||C.btOptimizingSym)){
+        C.btDownloading=false;C.btRunning=false;C.btOptimizing=false;C.btOptimizingSym=false;C.btProgress=null;
+      }
       needRender=true;
       setTimeout(rSysStatusBox,100);
       break;
@@ -1066,6 +1069,7 @@ const btns=el('div',{style:{display:'flex',gap:'8px'}});const testBtn=el('button
 
 // ══════════════ Backtest & المُحسِّن ══════════════
 function fmtTime(ms){if(!ms||ms<0)return '—';const s=Math.round(ms/1000);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60;return (h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(ss).padStart(2,'0');}
+function fmtPct(v){const n=parseFloat(v);if(!isFinite(n))return v+'%';const a=Math.abs(n);const sign=n<0?'-':'';if(a>=1e9)return sign+(a/1e9).toFixed(2)+'B%';if(a>=1e6)return sign+(a/1e6).toFixed(2)+'M%';if(a>=1e3)return sign+(a/1e3).toFixed(2)+'K%';return n+'%';}
 function drawBtEquity(canvas,eq){const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height,n=eq.length;ctx.clearRect(0,0,W,H);if(n<2)return;const mn=Math.min(...eq),mx=Math.max(...eq),rng=(mx-mn)||1;ctx.beginPath();ctx.lineWidth=2;ctx.strokeStyle=eq[n-1]>=eq[0]?'#2ed573':'#ff4757';eq.forEach((v,i)=>{const x=i/(n-1)*W,y=H-((v-mn)/rng)*(H-10)-5;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();}
 function downloadBtBackup(optSet){
   if(!optSet){showNotif('❌ لا يوجد إعداد للتحميل');return;}
@@ -1233,7 +1237,7 @@ function updateBtProgress(){
     const etaEl=document.getElementById('bt-opt-eta');if(etaEl)etaEl.textContent=fmtTime(p.etaMs);
     const cntEl=document.getElementById('bt-opt-count');if(cntEl)cntEl.textContent=`قُيِّم ${p.evaluated||0} توليفة من ${p.total||0}`;
     const liveEl=document.getElementById('bt-opt-live');
-    if(liveEl&&p.best&&p.best.metrics)liveEl.textContent=`أفضل حتى الآن: عائد ${p.best.metrics.netReturnPct}% · نجاح ${p.best.metrics.winRate}% · صفقات ${p.best.metrics.trades}`;
+    if(liveEl&&p.best&&p.best.metrics)liveEl.textContent=`أفضل حتى الآن: عائد ${fmtPct(p.best.metrics.netReturnPct)} · نجاح ${p.best.metrics.winRate}% · صفقات ${p.best.metrics.trades}`;
     return true;
   }
   if(p.kind==='optSym'){
@@ -1245,7 +1249,7 @@ function updateBtProgress(){
     const etaEl=document.getElementById('bt-optsym-eta');if(etaEl)etaEl.textContent=fmtTime(p.etaMs);
     const cntEl=document.getElementById('bt-optsym-count');if(cntEl)cntEl.textContent=`${p.done||0}/${p.total||0} — ${p.sym||''}`;
     const liveEl=document.getElementById('bt-optsym-live');
-    if(liveEl)liveEl.textContent=p.best&&p.best.metrics?`أفضل لـ${p.sym}: عائد ${p.best.metrics.netReturnPct}% · صفقات ${p.best.metrics.trades}`:(p.sym?`${p.sym}: لا نتيجة كافية`:'');
+    if(liveEl)liveEl.textContent=p.best&&p.best.metrics?`أفضل لـ${p.sym}: عائد ${fmtPct(p.best.metrics.netReturnPct)} · صفقات ${p.best.metrics.trades}`:(p.sym?`${p.sym}: لا نتيجة كافية`:'');
     return true;
   }
   return false;
@@ -1368,7 +1372,7 @@ function rBacktestPage(){
       const x=C.btResult.metrics;
       const stG=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'14px'}});
       const mkS=(lb,v,c='')=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v '+c},String(v)));return c2;};
-      stG.appendChild(mkS('العائد',x.netReturnPct+'%',x.netReturnPct>=0?'c-green':'c-red'));
+      stG.appendChild(mkS('العائد',fmtPct(x.netReturnPct),x.netReturnPct>=0?'c-green':'c-red'));
       stG.appendChild(mkS('نسبة النجاح',x.winRate+'%'));
       stG.appendChild(mkS('صفقات',String(x.trades)));
       stG.appendChild(mkS('Profit Factor',String(x.profitFactor)));
@@ -1455,7 +1459,7 @@ function rBacktestPage(){
     stG3.appendChild(mkS3('متبقٍّ','bt-opt-eta',fmtTime(p.etaMs)));
     optProg.appendChild(stG3);
     optProg.appendChild(el('div',{id:'bt-opt-count',style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',textAlign:'center'}},`قُيِّم ${p.evaluated||0} توليفة من ${p.total||0}`));
-    optProg.appendChild(el('div',{id:'bt-opt-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل حتى الآن: عائد ${p.best.metrics.netReturnPct}% · نجاح ${p.best.metrics.winRate}% · صفقات ${p.best.metrics.trades}`:''));
+    optProg.appendChild(el('div',{id:'bt-opt-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل حتى الآن: عائد ${fmtPct(p.best.metrics.netReturnPct)} · نجاح ${p.best.metrics.winRate}% · صفقات ${p.best.metrics.trades}`:''));
     sec3.appendChild(optProg);
   }
   const s3=SBody('s3');
@@ -1505,7 +1509,7 @@ function rBacktestPage(){
       bestBox.appendChild(el('div',{style:{fontSize:'12px',marginTop:'4px'}},`TP1: ${c.cxTP1}% · SL: ${c.sl[1]}% · TP2: ${c.tp2[0]==='on'?c.tp2[1]+'%':'—'} · دخول2: ${c.entry2[0]==='on'?c.entry2[1]+'%':'—'} · رافعة: ${c.cxLev}x`));
       const stG2=el('div',{className:'sgrid2',style:{gridTemplateColumns:'repeat(3,1fr)',marginTop:'10px'}});
       const mkS2=(lb,v,cl='')=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v '+cl},String(v)));return c2;};
-      stG2.appendChild(mkS2('عائد',m.netReturnPct+'%',m.netReturnPct>=0?'c-green':'c-red'));
+      stG2.appendChild(mkS2('عائد',fmtPct(m.netReturnPct),m.netReturnPct>=0?'c-green':'c-red'));
       stG2.appendChild(mkS2('نجاح',m.winRate+'%'));
       stG2.appendChild(mkS2('صفقات',String(m.trades)));
       stG2.appendChild(mkS2('PF',String(m.profitFactor)));
@@ -1545,7 +1549,7 @@ function rBacktestPage(){
           row.appendChild(td(e.entry2[0]==='on'?e.entry2[1]+'%':'—'));
           row.appendChild(td(e.trailExit[0]==='on'?e.trailExit[1]+'%':'—'));
           row.appendChild(td(e.be?'✓':'—'));
-          row.appendChild(td(m2.netReturnPct+'%',m2.netReturnPct>=0?'c-green':'c-red'));
+          row.appendChild(td(fmtPct(m2.netReturnPct),m2.netReturnPct>=0?'c-green':'c-red'));
           row.appendChild(td(m2.winRate+'%'));row.appendChild(td(m2.trades));row.appendChild(td(m2.maxDrawdownPct+'%','c-red'));
           const actTd=el('td',{style:{padding:'4px',borderBottom:'1px solid var(--border)',whiteSpace:'nowrap'}});
           const tryBtn=el('button',{style:{fontSize:'13px',padding:'2px 6px',marginInlineEnd:'2px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'جرّب وعدّل',onClick:()=>{applyComboToTest(it);window.scrollTo({top:0,behavior:'smooth'});}},'🧪');
@@ -1599,7 +1603,7 @@ function rBacktestPage(){
     stG4.appendChild(mkS4('متبقٍّ','bt-optsym-eta',fmtTime(p.etaMs)));
     symProg.appendChild(stG4);
     symProg.appendChild(el('div',{id:'bt-optsym-count',style:{fontSize:'11px',color:'var(--text2)',marginTop:'8px',textAlign:'center'}},`${p.done||0}/${p.total||0} — ${p.sym||''}`));
-    symProg.appendChild(el('div',{id:'bt-optsym-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل لـ${p.sym}: عائد ${p.best.metrics.netReturnPct}% · صفقات ${p.best.metrics.trades}`:''));
+    symProg.appendChild(el('div',{id:'bt-optsym-live',style:{fontSize:'11px',color:'var(--text2)',marginTop:'6px',textAlign:'center'}},p.best?.metrics?`أفضل لـ${p.sym}: عائد ${fmtPct(p.best.metrics.netReturnPct)} · صفقات ${p.best.metrics.trades}`:''));
     sec4.appendChild(symProg);
   }
   const s4=SBody('s4');
@@ -1663,7 +1667,7 @@ function rBacktestPage(){
             row.appendChild(td4(tl?`${tl.trStart}/${tl.trGap}`:'—'));
             row.appendChild(td4(tl?.total?tl.avgReversalPct+'%':'—','c-green'));
             row.appendChild(td4(tl?.total?tl.respectRate+'%':'—'));
-            row.appendChild(td4(m?m.netReturnPct+'%':'—',m&&m.netReturnPct>=0?'c-green':(m?'c-red':'')));
+            row.appendChild(td4(m?fmtPct(m.netReturnPct):'—',m&&m.netReturnPct>=0?'c-green':(m?'c-red':'')));
             row.appendChild(td4(m?m.trades:'—'));
             const actTd4=el('td',{style:{padding:'4px',borderBottom:'1px solid var(--border)',whiteSpace:'nowrap'}});
             const tryBtn4=el('button',{style:{fontSize:'13px',padding:'2px 6px',marginInlineEnd:'2px',background:'transparent',border:'1px solid var(--border)',borderRadius:'6px',cursor:'pointer'},title:'جرّب وعدّل',onClick:()=>{applyComboToTest(info);window.scrollTo({top:0,behavior:'smooth'});}},'🧪');
@@ -1863,7 +1867,7 @@ function rBacktestPage(){
       const mkStat=(lb,v,cl='')=>{const c2=el('div',{className:'sc2'});c2.appendChild(el('label',{},lb));c2.appendChild(el('div',{className:'v '+cl},String(v)));return c2;};
       statsG.appendChild(mkStat('صفقات (محسوبة)',String(mm.trades)));
       statsG.appendChild(mkStat('نجاح',mm.winRate+'%'));
-      statsG.appendChild(mkStat('إجمالي العائد',mm.netReturnPct+'%',mm.netReturnPct>=0?'c-green':'c-red'));
+      statsG.appendChild(mkStat('إجمالي العائد',fmtPct(mm.netReturnPct),mm.netReturnPct>=0?'c-green':'c-red'));
       detBody.appendChild(statsG);
 
       if(trades.length){
