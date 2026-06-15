@@ -591,28 +591,12 @@ const FS=(label,key,opts)=>{const f=el('div',{className:'set-field'});f.appendCh
 const T=(title,subs,key)=>{const on=C.settings[key]||false;const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{C.settings[key]=!C.settings[key];render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
 const SaveBtn=()=>el('button',{className:'set-save-btn',onClick:()=>{sendSettings(C.settings);showNotif('✅ تم حفظ الإعدادات بنجاح!');}},'\uD83D\uDCBE حفظ الإعدادات');
 if(settingsTab==='cornix'){
-  if(!C.settings.lockFields)C.settings.lockFields={amt:false,lev:false,sl:false,targets:false,entries:false};
   const s0=S('🧬 نظام إعدادات العملات المخصصة');
   s0.appendChild(T('استخدام إعدادات كل عملة',['مفعّل ✅ — كل عملة تستخدم إعداداتها الخاصة (المحفوظة/المرفوعة) إن وُجدت لها','معطّل ❌ — جميع العملات تستخدم الإعدادات العامة فقط، حتى لو كانت محفوظة لها إعدادات خاصة'],'useSymbolSettings'));
   page.appendChild(s0);
 
-  const lf=C.settings.lockFields;
-  const TL=(title,subs,key)=>{const on=!!lf[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{lf[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
-  const sLock=S('🔒 إعدادات ثابتة (تتجاوز إعدادات/ملفات العملات)');
-  sLock.appendChild(el('div',{className:'set-info'},'عند تفعيل أي بند هنا، قيمته تُؤخذ دائمًا من الإعدادات العامة في هذه الصفحة لكل العملات — حتى لو كان للعملة (أو الملف المرفوع في "🪙 لكل عملة") قيمة مختلفة.'));
-  sLock.appendChild(TL('مبلغ الصفقة',['ثابت — من الإعدادات العامة','يتغيّر حسب إعداد كل عملة'],'amt'));
-  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
-  sLock.appendChild(TL('الرافعة',['ثابتة — من الإعدادات العامة','تتغيّر حسب إعداد كل عملة'],'lev'));
-  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
-  sLock.appendChild(TL('وقف الخسارة (SL)',['ثابت — من الإعدادات العامة','يتغيّر حسب إعداد كل عملة'],'sl'));
-  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
-  sLock.appendChild(TL('الأهداف (TP1 + TP2)',['ثابتة — من الإعدادات العامة','تتغيّر حسب إعداد كل عملة'],'targets'));
-  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
-  sLock.appendChild(TL('الدخولات (Entry 2)',['ثابتة — من الإعدادات العامة','تتغيّر حسب إعداد كل عملة'],'entries'));
-  page.appendChild(sLock);
-
-  const s1=S('💼 الأساسيات');const g1=G();g1.appendChild(FS('الهامش','cxMargin',[['Isolated','Isolated'],['Cross','Cross']]));g1.appendChild(F('الرافعة (1-125)','number','cxLev',{min:'1',max:'125',step:'1'}));g1.appendChild(F('حجم الدخول','text','cxAmt',{placeholder:'مثال: 5%'}));g1.appendChild(F('الحد الأقصى لحجم الدخول % (لكل العملات)','number','cxAmtMax',{step:'0.1',min:'0',placeholder:'٠ = بدون حد'}));s1.appendChild(g1);page.appendChild(s1);
-  const s2=S('🛑 وقف الخسارة (SL)');s2.appendChild(T('وقف الخسارة',['مفعّل ✅ — حسب النسبة المحددة','معطّل ❌ — يُرسل ببند Stop ثابت على ٥٠٪ (شرط شكلي يتطلبه كورنكس)'],'cxSLon'));if(C.settings.cxSLon){const g2=G();g2.style.marginTop='10px';g2.appendChild(F('نسبة SL %','number','cxSL',{step:'0.1',min:'0.1',placeholder:'مثال: 2'}));s2.appendChild(g2);}const g2b=G();g2b.style.marginTop='10px';g2b.appendChild(F('الحد الأقصى لـ SL % (لكل العملات)','number','cxSLMax',{step:'0.1',min:'0',placeholder:'٠ = بدون حد'}));s2.appendChild(g2b);page.appendChild(s2);
+  const s1=S('💼 الأساسيات');const g1=G();g1.appendChild(FS('الهامش','cxMargin',[['Isolated','Isolated'],['Cross','Cross']]));g1.appendChild(F('الرافعة (1-125)','number','cxLev',{min:'1',max:'125',step:'1'}));g1.appendChild(F('حجم الدخول','text','cxAmt',{placeholder:'مثال: 5%'}));s1.appendChild(g1);page.appendChild(s1);
+  const s2=S('🛑 وقف الخسارة (SL)');s2.appendChild(T('وقف الخسارة',['مفعّل ✅ — حسب النسبة المحددة','معطّل ❌ — يُرسل ببند Stop ثابت على ٥٠٪ (شرط شكلي يتطلبه كورنكس)'],'cxSLon'));if(C.settings.cxSLon){const g2=G();g2.style.marginTop='10px';g2.appendChild(F('نسبة SL %','number','cxSL',{step:'0.1',min:'0.1',placeholder:'مثال: 2'}));s2.appendChild(g2);}page.appendChild(s2);
   const s3=S('🎯 الأهداف (Take Profit)');s3.appendChild(T('هدفين',['هدفين: TP1 + TP2','هدف واحد فقط'],'cxTP2on'));const g3=G();g3.style.marginTop='10px';if(!C.settings.cxTP2on){g3.appendChild(F('TP نسبة %','number','cxTP1',{step:'0.1',min:'0.1'}));}else{g3.appendChild(F('TP1 نسبة %','number','cxTP1',{step:'0.1'}));g3.appendChild(F('TP1 كمية %','number','cxTP1Amt',{step:'1',min:'1',max:'100'}));g3.appendChild(F('TP2 نسبة %','number','cxTP2',{step:'0.1'}));g3.appendChild(F('TP2 كمية %','number','cxTP2Amt',{step:'1',min:'1',max:'100'}));}s3.appendChild(g3);page.appendChild(s3);
   const s4=S('📍 الدخولات المتعددة');s4.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',marginBottom:'12px'}},'كورنكس يتجاهل بند الدخول الأول (Market) ويعتمد البند 2 كدخول أول فعلي والبند 3 كدخول ثاني فعلي. لذلك يضيف البوت تلقائياً دخولاً قريباً من السعر الحالي (٠.٥٪) في البند 2. فعّل "الدخول الثاني" لإضافة بند 3 بسعر وكمية محددة، وتصبح كمية البند 2 هي الباقي من النسبة (أو ١٠٠٪ إن كان معطّلاً).'));s4.appendChild(T('الدخول الثاني',['الدخول الثاني مفعّل ✅ (بند 3)','الدخول الثاني معطّل (بند 2 = 100%)'],'cxEntry2on'));if(C.settings.cxEntry2on){const ge2=G();ge2.style.marginTop='10px';ge2.appendChild(F('مسافة الدخول الثاني %','number','cxEntry2Dist',{step:'0.1',min:'0.1',placeholder:'مثال: 2'}));ge2.appendChild(F('كمية الدخول الثاني %','number','cxEntry2Amt',{step:'1',min:'1',max:'100',placeholder:'مثال: 50'}));s4.appendChild(ge2);}page.appendChild(s4);
   const s5=S('↩️ Trailing & Break Even');const g5=G();g5.appendChild(FS('Trailing TP','cxTrailTp',[['on','✅ مفعّل'],['off','❌ معطّل']]));g5.appendChild(F('Trailing TP %','number','cxTrailPct',{step:'0.1',min:'0.1'}));g5.appendChild(F('Entry Trailing','text','cxEntryTrail',{placeholder:'مثال: 0.5%'}));s5.appendChild(g5);s5.appendChild(el('div',{style:{marginTop:'10px'}}));s5.appendChild(T('Break Even',['مفعّل — SL يتحرك لنقطة التعادل بعد TP1','معطّل'],'cxBEon'));page.appendChild(s5);page.appendChild(SaveBtn());
@@ -891,6 +875,31 @@ if(settingsTab==='symbols'){
     }
     page.appendChild(btnRow);
   }
+
+  if(!C.settings.lockFields)C.settings.lockFields={amt:false,lev:false,sl:false,targets:false,entries:false};
+  const lf=C.settings.lockFields;
+  const TL=(title,subs,key)=>{const on=!!lf[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{lf[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
+  const GF=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'number',value:String(C.settings[key]||''),...ex});i.onchange=()=>{C.settings[key]=parseFloat(i.value)||0;};f.appendChild(i);return f;};
+  const sLock=S('🔒 إعدادات ثابتة عامة — تُطبَّق على كل العملات');
+  sLock.appendChild(el('div',{className:'set-info'},'عند تفعيل أي بند هنا، قيمته تُؤخذ دائمًا من الإعدادات العامة لكل العملات — حتى لو كانت للعملة إعدادات خاصة مختلفة. وحقول "الحد الأقصى" تُطبَّق كسقف إجباري على القيمة النهائية لكل العملات بلا استثناء، حتى لو تجاوزته الإعدادات العامة أو الخاصة.'));
+  sLock.appendChild(TL('مبلغ الصفقة',['ثابت — من الإعدادات العامة','يتغيّر حسب إعداد كل عملة'],'amt'));
+  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
+  sLock.appendChild(TL('الرافعة',['ثابتة — من الإعدادات العامة','تتغيّر حسب إعداد كل عملة'],'lev'));
+  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
+  sLock.appendChild(TL('وقف الخسارة (SL)',['ثابت — من الإعدادات العامة','يتغيّر حسب إعداد كل عملة'],'sl'));
+  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
+  sLock.appendChild(TL('الأهداف (TP1 + TP2)',['ثابتة — من الإعدادات العامة','تتغيّر حسب إعداد كل عملة'],'targets'));
+  sLock.appendChild(el('div',{style:{marginTop:'8px'}}));
+  sLock.appendChild(TL('الدخولات (Entry 2)',['ثابتة — من الإعدادات العامة','تتغيّر حسب إعداد كل عملة'],'entries'));
+  sLock.appendChild(el('div',{style:{marginTop:'14px'}}));
+  const gMax=G();
+  gMax.appendChild(GF('الحد الأقصى لحجم الدخول % (لكل العملات)','cxAmtMax',{step:'0.1',min:'0',placeholder:'٠ = بدون حد'}));
+  gMax.appendChild(GF('الحد الأقصى لـ SL % (لكل العملات)','cxSLMax',{step:'0.1',min:'0',placeholder:'٠ = بدون حد'}));
+  sLock.appendChild(gMax);
+  const lockSaveBtn=el('button',{className:'set-save-btn',style:{marginTop:'14px'},onClick:()=>{sendSettings(C.settings);showNotif('✅ تم حفظ الإعدادات الثابتة العامة');}});
+  lockSaveBtn.textContent='💾 حفظ الإعدادات الثابتة العامة';
+  sLock.appendChild(lockSaveBtn);
+  page.appendChild(sLock);
 }
 // ── تصدير واستعادة ──────────────────────────────
 const bakSec=S('💾 تصدير واستعادة البيانات');
