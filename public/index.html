@@ -144,7 +144,7 @@ const REV_LOOKBACK=5, REV_THRESHOLD=3;
 const MIN_SIG_SAMPLE=10; // أقل عدد إشارات لاعتماد نسبة الاحترام في "الإعداد النهائي المُحسَّن"
 const BT_OPT_FIELDS=['interval','mode','maPeriod','revMode','revCount','enableDiv','sigQueueFilters','trSon','trLon','trSstart','trSgap','trLstart','trLgap','ema200FilterOn','stFilterOn','cxTP1','cxSLon','cxSL','cxTP2on','cxTP2','cxEntry2on','cxEntry2Dist','cxTrailTp','cxTrailPct','cxBEon','dirFilter','cxLev'];
 // الحقول المسموح بتخصيصها لكل عملة على حدة (مطابقة لـ SYMBOL_OVERRIDE_FIELDS في السيرفر)
-const SYMBOL_OVERRIDE_FIELDS=['interval','mode','maPeriod','revMode','revCount','enableDiv','dirFilter','sigQueueFilters','sigFilters','trSon','trSstart','trSgap','trLon','trLstart','trLgap','ema200FilterOn','stFilterOn','cxMargin','cxLev','cxAmt','cxAmtAuto','cxSLon','cxSL','cxSLAuto','cxTP1','cxTP1Amt','cxTP2on','cxTP2','cxTP2Amt','cxEntry2on','cxEntry2Dist','cxEntry2Amt','cxTrailTp','cxTrailPct','cxTrailPctAuto','cxBEon','cxBEonAuto','cxEntryTrail','cxEntryTrailAuto'];
+const SYMBOL_OVERRIDE_FIELDS=['interval','mode','maPeriod','revMode','revCount','enableDiv','dirFilter','sigQueueFilters','sigFilters','trSon','trSstart','trSgap','trLon','trLstart','trLgap','ema200FilterOn','stFilterOn','cxMargin','cxLev','cxAmt','cxSLon','cxSL','cxTP1','cxTP1Amt','cxTP2on','cxTP2','cxTP2Amt','cxEntry2on','cxEntry2Dist','cxEntry2Amt','cxTrailTp','cxTrailPct','cxBEon','cxBEonAuto'];
 let symSetSym='',symSetDraft=null;
 function selectSymForSettings(sym){
   symSetSym=sym;
@@ -836,27 +836,12 @@ if(settingsTab==='symbols'){
     const pg7a=G();
     pg7a.appendChild(PFS('الهامش','cxMargin',[['Isolated','Isolated'],['Cross','Cross']]));
     pg7a.appendChild(PF('الرافعة (1-125)','cxLev',{min:'1',max:'125',step:'1'}));
+    pg7a.appendChild(PFT('حجم الدخول','cxAmt',{placeholder:'مثال: 5%'}));
     ps7.appendChild(pg7a);
 
     ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
-    ps7.appendChild(PTOG('حجم الدخول — استخدام الإعداد العام',['مفعّل ✅ — يتبع حجم الدخول العام دائماً، حتى لو تغيّر لاحقاً (والحد الأقصى العام يُطبَّق دائماً)','معطّل ❌ — يستخدم حجم الدخول الخاص بهذه العملة (أدناه)'],'cxAmtAuto'));
-    if(PS.cxAmtAuto){
-      ps7.appendChild(el('div',{style:{marginTop:'8px',fontSize:'11px',color:'var(--text2)'}},'القيمة العامة الحالية: '+C.settings.cxAmt+(parseFloat(C.settings.cxAmtMax)>0?(' (الحد الأقصى: '+C.settings.cxAmtMax+'%)'):'')));
-    }else{
-      const pg7a2=G();pg7a2.style.marginTop='8px';pg7a2.appendChild(PFT('حجم الدخول','cxAmt',{placeholder:'مثال: 5%'}));ps7.appendChild(pg7a2);
-    }
-
-    ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
     ps7.appendChild(PTOG('وقف الخسارة',['مفعّل ✅ — حسب النسبة المحددة','معطّل ❌ — يُرسل ببند Stop ثابت على ٥٠٪'],'cxSLon'));
-    if(PS.cxSLon){
-      ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
-      ps7.appendChild(PTOG('نسبة SL — استخدام الإعداد العام',['مفعّل ✅ — يتبع نسبة SL العامة دائماً، حتى لو تغيّرت لاحقاً (والحد الأقصى العام يُطبَّق دائماً)','معطّل ❌ — يستخدم نسبة SL الخاصة بهذه العملة (أدناه)'],'cxSLAuto'));
-      if(PS.cxSLAuto){
-        ps7.appendChild(el('div',{style:{marginTop:'8px',fontSize:'11px',color:'var(--text2)'}},'القيمة العامة الحالية: '+C.settings.cxSL+'%'+(parseFloat(C.settings.cxSLMax)>0?(' (الحد الأقصى: '+C.settings.cxSLMax+'%)'):'')));
-      }else{
-        const pg7b=G();pg7b.style.marginTop='8px';pg7b.appendChild(PF('نسبة SL %','cxSL',{step:'0.1',min:'0.1'}));ps7.appendChild(pg7b);
-      }
-    }
+    if(PS.cxSLon){const pg7b=G();pg7b.style.marginTop='10px';pg7b.appendChild(PF('نسبة SL %','cxSL',{step:'0.1',min:'0.1'}));ps7.appendChild(pg7b);}
 
     ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
     ps7.appendChild(PTOG('هدفين TP1 + TP2',['هدفين مفعّلين','هدف واحد فقط'],'cxTP2on'));
@@ -872,24 +857,8 @@ if(settingsTab==='symbols'){
     ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
     const pg7f=G();
     pg7f.appendChild(PFS('Trailing TP','cxTrailTp',[['on','✅ مفعّل'],['off','❌ معطّل']]));
+    pg7f.appendChild(PF('Trailing TP %','cxTrailPct',{step:'0.1',min:'0.1'}));
     ps7.appendChild(pg7f);
-
-    ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
-    ps7.appendChild(PTOG('Trailing TP % — استخدام الإعداد العام',['مفعّل ✅ — يتبع نسبة Trailing TP العامة دائماً، حتى لو تغيّرت لاحقاً','معطّل ❌ — يستخدم نسبة Trailing TP الخاصة بهذه العملة (أدناه)'],'cxTrailPctAuto'));
-    if(PS.cxTrailPctAuto){
-      ps7.appendChild(el('div',{style:{marginTop:'8px',fontSize:'11px',color:'var(--text2)'}},'القيمة العامة الحالية: '+C.settings.cxTrailPct+'%'));
-    }else{
-      const pg7f2=G();pg7f2.style.marginTop='8px';pg7f2.appendChild(PF('Trailing TP %','cxTrailPct',{step:'0.1',min:'0.1'}));ps7.appendChild(pg7f2);
-    }
-
-    ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
-    ps7.appendChild(PTOG('Entry Trailing — استخدام الإعداد العام',['مفعّل ✅ — يتبع Entry Trailing العام دائماً، حتى لو تغيّر لاحقاً','معطّل ❌ — يستخدم Entry Trailing الخاص بهذه العملة (أدناه)'],'cxEntryTrailAuto'));
-    if(PS.cxEntryTrailAuto){
-      ps7.appendChild(el('div',{style:{marginTop:'8px',fontSize:'11px',color:'var(--text2)'}},'القيمة العامة الحالية: '+C.settings.cxEntryTrail));
-    }else{
-      const pg7g=G();pg7g.style.marginTop='8px';pg7g.appendChild(PFT('Entry Trailing','cxEntryTrail',{placeholder:'مثال: 0.5%'}));ps7.appendChild(pg7g);
-    }
-
     ps7.appendChild(el('div',{style:{marginTop:'10px'}}));
     ps7.appendChild(PTOG('Break Even — استخدام الإعداد العام',['مفعّل ✅ — يتبع البريك ايفن الإعداد العام دائماً، حتى لو تغيّر لاحقاً','معطّل ❌ — يستخدم إعداد البريك ايفن الخاص بهذه العملة (أدناه)'],'cxBEonAuto'));
     if(PS.cxBEonAuto){
