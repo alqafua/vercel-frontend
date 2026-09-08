@@ -140,7 +140,7 @@ const RES_PRESETS={
 };
 // نسخة الواجهة — تظهر في شريط التبويبات. غيّرها مع كل تعديل يُرسَل للرفع،
 // كي يُعرف فوراً إن كان المتصفح/Vercel يعرض ملفاً قديماً.
-const UI_VERSION='v46-stopfmt';
+const UI_VERSION='v49-locksplit';
 const C={token:null,loggedIn:false,page:'dashboard',wsConn:false,symbols:[],symbolData:{},symbolSettings:{},dcaOrders:[],pendingOrders:[],waitQueue:[],respectData:{},perSymST:{},perSymSTProgress:null,lockState:null,lockSel:[],lockBusy:'',wqOpen:false,sysStatus:{ok:true,lastError:null,errorLoc:null,errorTs:null},symbolMeta:{},alerts:[],openTrades:[],closedTrades:[],ema200:null,superTrend:null,settings:{mode:'SMA',maPeriod:14,interval:'1h',autoSend:false,enableDiv:true,blockOpen:true,soundEnabled:true,sigFilters:{ob:true,os:true,conf:true,trail:true},cxMargin:'Cross',cxLev:'20',cxAmt:'5%',cxAmtMax:'0',cxSLon:true,cxSL:'2',cxSLMax:'0',cxTP1:'3',cxTP1Amt:'50',cxTP2on:false,cxTP2:'6',cxTP2Amt:'50',cxTrailTp:'off',cxTrailPct:'0.5',cxEntryTrail:'0.5%',cxToken:'',cxChat:'',cxChatClose:'',cxChatBT:'',cxChatSettings:'',cxEntry2on:false,cxEntry2Dist:'2',cxEntry2Amt:'50',cxBEon:false,trSon:false,trSstart:75,trSgap:3,trLon:false,trLstart:25,trLgap:3,liqVon:false,liqVmin:50000000,liqOon:false,liqOmin:10000000,revMode:'candles',revCount:1,rsiGap:1,dataMode:'ws',maxOpenTrades:0,queueRevAutoOn:false,queueRevAutoPct:10,sigQueueFilters:{ob:true,os:true,conf:true,trail:true},ema200TF:'4h',ema200FilterOn:false,stTF:'4h',stPeriod:10,stMult:3,stFilterOn:false,respectFilterOn:false,respectMin:50,perSymSTon:false,perSymSTtf:'4h',perSymSigTF:'5m',perSymSigMode:'RSI',deadZoneOn:false,deadZoneMode:'wait',deadZonePct:1,stSLon:false,stSLmode:'flip',stSLpct:0.5,cxChatSTSim:'',lockOn:false,lockMaster:false,lockMasterHours:24,lockAllSettings:false,lockAutoSLon:false,lockAutoSLpct:2,lockDailyOn:false,lockDailyAmt:10,lockDailyHours:24,lockAutoBEon:false,lockTrendTF:'1h',lockTrendTFst:'4h',lockTrendTFema:'1h',lockTrendInd:'both',lockBEtrig:'near',lockBEnearPct:1,lockBEoffsetPct:0.1,lockBEminPnl:50,lockAutoTrailOn:false,lockAutoTrailPct:10,lockAutoTrailTrig:'near',lockAutoLossOn:false,lockAutoLossPct:2,lockAutoLossTrig:'flip',lockTgChat:'',lockCloseCmd:'/close',lockCornixSync:false,extraIntervals:[],dirFilter:'all',useSymbolSettings:true,tgStarFilter:'all',lockFields:{amt:false,lev:false,sl:false,targets:false,entries:false,trailing:false,be:false}},copyOn:false,copyLog:[],accounts:[],drawerOpen:false,activeTab:'alerts',progress:0,scanning:false,lastUpdate:'',toast:null,filter:'all',sortBy:'rsi',search:'',statsPeriod:'today',sentSigs:{},btInfo:null,btProgress:null,btResult:null,btOptResult:null,btDownloading:false,btUpdating:false,btImporting:false,btImportPct:0,btRunning:false,btOptimizing:false,btOptimizingSym:false,btDays:90,btBudget:24,btMinTrades:30,btBaseSettings:null,btBaseMsg:'',btSettingsNote:'',btSymBudget:3,btSymMinTrades:10,btOptSymResult:null,btChartReq:null,btChartData:null,btChartLoading:false,btSettings:{interval:'1h',mode:'SMA',maPeriod:14,cxLev:20,cxTP1:3,cxTP1Amt:50,cxSL:3,cxEntry2Dist:2,cxSLon:true,cxTP2on:false,cxEntry2on:false,enableDiv:true,ema200FilterOn:false,stFilterOn:false},resFiles:[],resAnalysis:null,resSending:false,resFilters:{preset:'loose',minTrades:10,maxDD:15,minPF:1.2,minRespectShort:0,minRespectLong:0,minAvgReversal:0},btOptimizingRespect:false,btRespectResult:null,btOptimizingTuned:false,btTunedResult:null,btMgmtSource:'respect',btOptimizingMgmt:false,btMgmtResult:null,sumPreset:'loose',sumOverrides:{},sumSending:false,btSumDrillSym:null};
 const BT_TFS=['1h','4h'];
 const REV_LOOKBACK=5, REV_THRESHOLD=3;
@@ -160,6 +160,9 @@ function selectSymForSettings(sym){
 }
 let btSecOpen={s1:false,s2:false,s3:false,s4:false,s5info:false,respTbl:false,tunedTbl:false,mgmtTbl:false,sumTbl:false,tradesTbl:false};
 let settingsTab='cornix',showForm=false,formAccId=null,showLog=false,showDCA=false,dcaSym='',dcaSide='LONG';
+// صحيح ما دام فيه تعديل محلي (حقل نصي/تبديل) لم يُحفظ بعد بضغطة "حفظ الإعدادات" —
+// يمنع بثّ الإعدادات القادم من الخادم (من جهاز آخر أو تغيير غير متعلّق) من محو التعديل قبل حفظه
+let settingsDirty=false;
 let showManualOrder=false,manualOrderAccId=null,reportAccId=null;
 let fd={name:'',apiKey:'',apiSecret:'',sizeRatio:'1',tag:'personal',isMaster:false,copyExisting:false};
 let audioCtx=null,toastRef=null,rPend=false,ws=null,wsReconn=null;
@@ -186,6 +189,7 @@ function startAutoBackup(){
   autoBackupTimer=setInterval(()=>{if(ws?.readyState===WebSocket.OPEN)send('exportData',{});},h*3600*1000);
 }
 function stopAutoBackup(){if(autoBackupTimer){clearInterval(autoBackupTimer);autoBackupTimer=null;}}
+let lockWatch=null;
 function connectWS(){if(ws)return;ws=new WebSocket(getWsUrl());ws.onopen=()=>{C.wsConn=true;render();};ws.onclose=()=>{C.wsConn=false;ws=null;render();wsReconn=setTimeout(connectWS,3000);};ws.onerror=()=>{};ws.onmessage=(ev)=>{try{handleServerMsg(JSON.parse(ev.data));}catch(e){}}}
 function send(type,data){if(ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type,data}));}
 // القفل يُعتبر منتهياً فور مرور وقته حتى قبل أن يبثّ الخادم التحديث،
@@ -333,7 +337,7 @@ function handleServerMsg(msg){
   switch(msg.type){
     case 'init':
       Object.assign(C,msg.data);
-      if(msg.data.settings)C.settings={...C.settings,...msg.data.settings};
+      if(msg.data.settings&&!settingsDirty)C.settings={...C.settings,...msg.data.settings};
       if(msg.data.settings?.dirFilter&&msg.data.settings.dirFilter!=='all')C.filter=msg.data.settings.dirFilter;
       if(!C.btBusy&&(C.btDownloading||C.btUpdating||C.btRunning||C.btOptimizing||C.btOptimizingSym||C.btOptimizingRespect||C.btOptimizingTuned||C.btOptimizingMgmt)){
         C.btDownloading=false;C.btUpdating=false;C.btRunning=false;C.btOptimizing=false;C.btOptimizingSym=false;C.btOptimizingRespect=false;C.btOptimizingTuned=false;C.btOptimizingMgmt=false;C.btProgress=null;
@@ -343,7 +347,7 @@ function handleServerMsg(msg){
       break;
     case 'state':
       Object.assign(C,msg.data);
-      if(msg.data.settings)C.settings={...C.settings,...msg.data.settings};
+      if(msg.data.settings&&!settingsDirty)C.settings={...C.settings,...msg.data.settings};
       // لا render - فقط تحديث البيانات
       break;
     case 'alert':
@@ -361,7 +365,7 @@ function handleServerMsg(msg){
       updateGridOnly();
       return;
     case 'progress':C.progress=msg.data;break;
-    case 'settings':C.settings={...C.settings,...msg.data};break;
+    case 'settings':if(!settingsDirty)C.settings={...C.settings,...msg.data};break;
     case 'symbolSettings':C.symbolSettings=msg.data||{};if(symSetSym)selectSymForSettings(symSetSym);needRender=true;break;
     case 'alerts':C.alerts=msg.data;needRender=true;break;
     case 'trades':C.openTrades=msg.data;needRender=true;break;
@@ -372,8 +376,10 @@ function handleServerMsg(msg){
     case 'lockState':C.lockState=msg.data;needRender=true;break;
     case 'lockMsgSyms':C.lockMsgSyms=msg.data||[];if(C.page==='lock')needRender=true;break;
     case 'lockResult':{
-      C.lockBusy='';
+      C.lockBusy='';clearTimeout(lockWatch);
       const d=msg.data||{};
+      // النتيجة تبقى معروضة — التنبيه العابر كان يختفي قبل أن تُقرأ
+      if(!d.verbose)C.lockLast={...d,at:Date.now(),label:C.lockSent?.label||''};
       if(!d.ok){showNotif('❌ '+(d.error||'فشل'),4000);}
       else if(d.verbose){C.lockProbe=d.done||[];showNotif('✅ اكتمل الفحص — النتيجة بالأسفل',3000);}
       else{
@@ -666,10 +672,10 @@ function rNav(){const nav=el('div',{className:'navbar'});nav.appendChild(el('but
 function rSettingsPage(){const page=el('div',{className:'set-page'});page.appendChild(el('div',{className:'set-title'},'⚙️ الإعدادات'));const tabs=el('div',{className:'set-tabs'});[['cornix','⚙️ Cornix'],['telegram','📤 تلغرام'],['trailing','🟣 Trailing RSI'],['liquidity','💧 السيولة'],['scanner','🔍 السكانر'],['symbols','🪙 لكل عملة']].forEach(([k,lb])=>{tabs.appendChild(el('button',{className:'set-tab '+(settingsTab===k?'active':''),onClick:()=>{settingsTab=k;render();}},lb));});page.appendChild(tabs);
 const S=(t)=>{const s=el('div',{className:'set-section'});s.appendChild(el('div',{className:'set-sec-title'},t));return s;};
 const G=()=>el('div',{className:'set-grid'});
-const F=(label,type,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type,value:String(C.settings[key]||''),...ex});i.onchange=()=>{C.settings[key]=type==='number'?parseFloat(i.value)||0:i.value;};f.appendChild(i);return f;};
-const FS=(label,key,opts)=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const s=el('select',{});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(String(C.settings[key])===v)o.setAttribute('selected','');s.appendChild(o);});s.onchange=()=>{C.settings[key]=s.value;render();};f.appendChild(s);return f;};
-const T=(title,subs,key)=>{const on=C.settings[key]||false;const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{C.settings[key]=!C.settings[key];render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
-const SaveBtn=()=>el('button',{className:'set-save-btn',onClick:()=>{sendSettings(C.settings);showNotif('✅ تم حفظ الإعدادات بنجاح!');}},'\uD83D\uDCBE حفظ الإعدادات');
+const F=(label,type,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type,value:String(C.settings[key]||''),...ex});i.onchange=()=>{C.settings[key]=type==='number'?parseFloat(i.value)||0:i.value;settingsDirty=true;};f.appendChild(i);return f;};
+const FS=(label,key,opts)=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const s=el('select',{});opts.forEach(([v,t])=>{const o=el('option',{value:v},t);if(String(C.settings[key])===v)o.setAttribute('selected','');s.appendChild(o);});s.onchange=()=>{C.settings[key]=s.value;settingsDirty=true;render();};f.appendChild(s);return f;};
+const T=(title,subs,key)=>{const on=C.settings[key]||false;const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{C.settings[key]=!C.settings[key];settingsDirty=true;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
+const SaveBtn=()=>el('button',{className:'set-save-btn',onClick:()=>{sendSettings(C.settings);settingsDirty=false;showNotif('✅ تم حفظ الإعدادات بنجاح!');}},'\uD83D\uDCBE حفظ الإعدادات');
 if(settingsTab==='cornix'){
   const s0=S('🧬 نظام إعدادات العملات المخصصة');
   s0.appendChild(T('استخدام إعدادات كل عملة',['مفعّل ✅ — كل عملة تستخدم إعداداتها الخاصة (المحفوظة/المرفوعة) إن وُجدت لها','معطّل ❌ — جميع العملات تستخدم الإعدادات العامة فقط، حتى لو كانت محفوظة لها إعدادات خاصة'],'useSymbolSettings'));
@@ -962,9 +968,9 @@ if(settingsTab==='symbols'){
 
   if(!C.settings.lockFields)C.settings.lockFields={amt:false,lev:false,sl:false,targets:false,entries:false,trailing:false,be:false};
   const lf=C.settings.lockFields;
-  const TL=(title,subs,key)=>{const on=!!lf[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{lf[key]=!on;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
-  const GF=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'number',value:String(C.settings[key]||''),...ex});i.onchange=()=>{C.settings[key]=parseFloat(i.value)||0;};f.appendChild(i);return f;};
-  const GFT=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'text',value:String(C.settings[key]||''),...ex});i.onchange=()=>{C.settings[key]=i.value;};f.appendChild(i);return f;};
+  const TL=(title,subs,key)=>{const on=!!lf[key];const row=el('div',{className:'set-toggle '+(on?'on':''),onClick:()=>{lf[key]=!on;settingsDirty=true;render();}});const knob=el('div',{className:'stog-knob '+(on?'on':'')});knob.appendChild(el('div',{className:'stog-ball'}));row.appendChild(knob);const lbl=el('div',{className:'stog-label'});lbl.appendChild(el('div',{className:'stog-title'},title));if(subs)lbl.appendChild(el('div',{className:'stog-sub'},on?subs[0]:subs[1]));row.appendChild(lbl);return row;};
+  const GF=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'number',value:String(C.settings[key]||''),...ex});i.onchange=()=>{C.settings[key]=parseFloat(i.value)||0;settingsDirty=true;};f.appendChild(i);return f;};
+  const GFT=(label,key,ex={})=>{const f=el('div',{className:'set-field'});f.appendChild(el('label',{},label));const i=el('input',{type:'text',value:String(C.settings[key]||''),...ex});i.onchange=()=>{C.settings[key]=i.value;settingsDirty=true;};f.appendChild(i);return f;};
   const sLock=S('🔒 إعدادات ثابتة عامة — تُطبَّق على كل العملات');
   sLock.appendChild(el('div',{className:'set-info'},'عند تفعيل أي بند هنا، قيمته تُؤخذ دائمًا من الإعدادات العامة لكل العملات — حتى لو كانت للعملة إعدادات خاصة مختلفة. وحقول "الحد الأقصى" تُطبَّق كسقف إجباري على القيمة النهائية لكل العملات بلا استثناء، حتى لو تجاوزته الإعدادات العامة أو الخاصة.'));
   sLock.appendChild(TL('مبلغ الصفقة',['ثابت — من الإعدادات العامة','يتغيّر حسب إعداد كل عملة'],'amt'));
@@ -989,7 +995,7 @@ if(settingsTab==='symbols'){
   gMax.appendChild(GF('الحد الأقصى لحجم الدخول % (لكل العملات)','cxAmtMax',{step:'0.1',min:'0',placeholder:'٠ = بدون حد'}));
   gMax.appendChild(GF('الحد الأقصى لـ SL % (لكل العملات)','cxSLMax',{step:'0.1',min:'0',placeholder:'٠ = بدون حد'}));
   sLock.appendChild(gMax);
-  const lockSaveBtn=el('button',{className:'set-save-btn',style:{marginTop:'14px'},onClick:()=>{sendSettings(C.settings);showNotif('✅ تم حفظ الإعدادات الثابتة العامة');}});
+  const lockSaveBtn=el('button',{className:'set-save-btn',style:{marginTop:'14px'},onClick:()=>{sendSettings(C.settings);settingsDirty=false;showNotif('✅ تم حفظ الإعدادات الثابتة العامة');}});
   lockSaveBtn.textContent='💾 حفظ الإعدادات الثابتة العامة';
   sLock.appendChild(lockSaveBtn);
   page.appendChild(sLock);
@@ -1302,13 +1308,13 @@ function rLockPage(){
       });
       row.appendChild(kr);
       // نعرض ما سيحدث فعلاً: التقليم يتطلّب تشغيل النظام إضافةً إلى الحد اليومي
-      if(d.manual&&!d.baseline&&L.cap>0&&d.margin>L.cap*1.02){
-        const extra=(d.margin-L.cap).toFixed(2);
+      if(d.manual&&!d.baseline&&L.perTradeCap>0&&d.margin>L.perTradeCap*1.02){
+        const extra=(d.margin-L.perTradeCap).toFixed(2);
         let txt,col;
         if(!C.settings.lockOn){txt='⚠️ زيادة $'+extra+' فوق الحد — لن تُقلَّم لأن نظام القفل متوقف';col='var(--red)';}
         else if(!C.settings.lockDailyOn){txt='⚠️ زيادة $'+extra+' — لن تُقلَّم لأن «الحد اليومي» معطّل';col='var(--red)';}
         else if(L.locked){txt='⏸ زيادة $'+extra+' — التقليم متوقف أثناء فترة القفل';col='var(--orange)';}
-        else{txt='✂️ ستُقلَّم إلى $'+L.cap+' (زيادة $'+extra+') خلال ١٥ ثانية';col='var(--orange)';}
+        else{txt='✂️ ستُقلَّم إلى $'+L.perTradeCap+' (زيادة $'+extra+') خلال ١٥ ثانية';col='var(--orange)';}
         row.appendChild(el('div',{style:{fontSize:'10px',color:col,marginTop:'4px',fontWeight:'700'}},txt));
       }
       sD.appendChild(row);
@@ -1332,11 +1338,12 @@ function rLockPage(){
 
   // ── (2)+(3) الحد اليومي ──
   const s2=S('💰 ٢+٣ — الحد اليومي للتداول اليدوي','var(--orange)');
-  s2.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',lineHeight:'1.7',marginBottom:'6px'}},'الرقم يعمل بوظيفتين: (أ) أقصى هامش لكل صفقة يدوية — الزيادة تُقلَّم تلقائياً. (ب) سقف الخسارة اليومية — عند بلوغه يُقفل التداول اليدوي وتُغلق أي صفقة جديدة فوراً. تقدر تفتح صفقات كما تشاء ما دمت لم تبلغ الحد.'));
+  s2.appendChild(el('div',{style:{fontSize:'11px',color:'var(--text2)',lineHeight:'1.7',marginBottom:'6px'}},'خانتان مستقلّتان: (٢) أقصى هامش لكل صفقة يدوية — الزيادة تُقلَّم تلقائياً. (٣) سقف إجمالي الخسائر اليومية — عند بلوغه (خسارة محقّقة + عائمة) يُقفل كل الصفقات اليدوية المفتوحة ويمنع فتح صفقات جديدة فوراً. تقدر تفتح صفقات كما تشاء ما دمت لم تبلغ الحد.'));
   s2.appendChild(TOG('تفعيل الحد اليومي','lockDailyOn','',mLocked));
   if(C.settings.lockDailyOn){
     const g=G();
-    g.appendChild(NUM('الحد بالدولار $','lockDailyAmt',{step:'0.5',min:'1'},mLocked,'هامش الصفقة + سقف الخسارة'));
+    g.appendChild(NUM('الحد الأقصى لهامش الصفقة الواحدة $','lockPerTradeAmt',{step:'0.5',min:'1'},mLocked,'يُقلَّم أي صفقة يدوية هامشها أكبر تلقائياً — ٠ = بدون حد'));
+    g.appendChild(NUM('الحد اليومي لإجمالي الخسائر $','lockDailyAmt',{step:'0.5',min:'1'},mLocked,'يقفل كل الصفقات اليدوية ويمنع فتح جديدة عند بلوغه — ٠ = بدون حد'));
     g.appendChild(NUM('كل كم ساعة يُفتح','lockDailyHours',{step:'1',min:'1',max:'168'},mLocked,'مدة النافذة وفترة الانتظار'));
     s2.appendChild(g);
   }
@@ -1546,12 +1553,27 @@ function rLockPage(){
       ctl.appendChild(lbl);ctl.appendChild(inp);
       const btn=el('button',{className:'btn',style:{fontSize:'11px',fontWeight:'800',background:'transparent',borderColor:color,color}});
       btn.textContent='▶ نفّذ';
+      // تأكيد داخل الصفحة بدل نافذة confirm — النافذة الأصلية تُجمّد المتصفح
+      // على الجوال أحياناً فلا تعود الصفحة تستجيب ولا تُحدَّث
+      let armedAt=0;
       btn.onclick=()=>{
         const v=parseFloat(inp.value);
         if(!isFinite(v)||v<0){showNotif('❌ أدخل نسبة صحيحة',2500);return;}
-        if(!confirm(label+' بنسبة '+v+'% على '+(C.lockSel.length===0?'كل الصفقات ('+positions.length+')':C.lockSel.length+' صفقة')+'؟'))return;
+        const target=C.lockSel.length===0?'كل الصفقات ('+positions.length+')':C.lockSel.length+' صفقة';
+        if(Date.now()-armedAt>6000){
+          armedAt=Date.now();
+          btn.textContent='⚠️ اضغط للتأكيد — '+v+'% على '+target;
+          setTimeout(()=>{if(!btn.disabled&&Date.now()-armedAt>=6000)btn.textContent='▶ نفّذ';},6200);
+          return;
+        }
         C.lockBusy=label;btn.textContent='⏳ ينفّذ...';btn.disabled=true;
+        C.lockSent={label,at:Date.now()};
         onRun(v);
+        // حارس: لو لم يصل ردّ، لا يبقى الزر معلّقاً بلا خبر
+        clearTimeout(lockWatch);
+        lockWatch=setTimeout(()=>{
+          if(C.lockBusy){C.lockBusy='';C.lockLast={at:Date.now(),label,ok:false,error:'لم يصل ردّ من الخادم خلال ٦٠ ثانية — قد تكون العملية نُفِّذت. راجع بايننس والسجل قبل إعادة المحاولة.'};render();}
+        },60000);
       };
       ctl.appendChild(btn);row.appendChild(ctl);return row;
     };
@@ -1564,6 +1586,34 @@ function rLockPage(){
 
     s567.appendChild(mkAction('📉','٧ — تعديل التريلنج للرابحة','يستبدل التريلنج الحالي بالنسبة الجديدة للصفقات الرابحة. بايننس يقبل ٠٫١٪–٥٪ فقط؛ أي نسبة أكبر تُرسَل لكورنكس فقط.','var(--purple)','نسبة التريلنج %',C.settings.cxTrailPct||0.5,0.1,
       v=>send('lockTrailing',{syms:C.lockSel,pct:v})));
+
+    // نتيجة آخر أمر — تبقى حتى الأمر التالي
+    {
+      const R=C.lockLast;
+      if(R){
+        const col=R.ok===false?'var(--red)':(R.failed?.length?'var(--orange)':'var(--green)');
+        const box=el('div',{style:{marginTop:'10px',padding:'10px 12px',borderRadius:'10px',background:'var(--bg3)',border:'1px solid '+col+'66'}});
+        const hd=el('div',{style:{display:'flex',justifyContent:'space-between',gap:'8px',flexWrap:'wrap',marginBottom:'6px'}});
+        hd.appendChild(el('div',{style:{fontSize:'11px',fontWeight:'800',color:col}},'🧾 نتيجة آخر أمر'+(R.label?' — '+R.label:'')));
+        hd.appendChild(el('div',{style:{fontSize:'9px',color:'var(--text2)'}},new Date(R.at).toLocaleTimeString('ar-EG',{hour12:false})));
+        box.appendChild(hd);
+        const li=(icon,arr,c)=>{
+          if(!arr||!arr.length)return;
+          box.appendChild(el('div',{style:{fontSize:'10px',color:c,marginTop:'3px',lineHeight:'1.7',wordBreak:'break-word'}},icon+' '+arr.join(' · ')));
+        };
+        if(R.ok===false)box.appendChild(el('div',{style:{fontSize:'10px',color:'var(--red)',lineHeight:'1.7'}},'❌ '+(R.error||'فشل')));
+        li('✅ نُفِّذت على بايننس:',R.done,'var(--green)');
+        li('👁 يتابعها البوت:',R.armed,'var(--orange)');
+        li('📨 كورنكس فقط:',R.cornixOnly,'var(--accent)');
+        li('❌ فشلت:',R.failed,'var(--red)');
+        li('⏭ تُخطّيت:',R.skipped,'var(--text2)');
+        if(R.ok!==false&&!R.done?.length&&!R.failed?.length&&!R.skipped?.length&&!R.armed?.length)
+          box.appendChild(el('div',{style:{fontSize:'10px',color:'var(--text2)'}},'لا توجد صفقات مطابقة للشرط'));
+        s567.appendChild(box);
+      } else if(C.lockBusy){
+        s567.appendChild(el('div',{style:{marginTop:'10px',padding:'9px 12px',borderRadius:'10px',background:'var(--bg3)',border:'1px solid var(--accent)66',fontSize:'11px',color:'var(--accent)',fontWeight:'700'}},'⏳ '+C.lockBusy+' — بانتظار ردّ الخادم…'));
+      }
+    }
   }
   page.appendChild(s567);
 
@@ -3965,6 +4015,7 @@ function rBacktestPage(){
 // حاجز أخطاء: استثناء أثناء الرسم كان يترك الصفحة بيضاء بلا أي أثر —
 // الآن يظهر الخطأ ويبقى زر للعودة بدل التعليق الصامت
 function render(){
+  if(C.page!=='settings'&&settingsDirty)settingsDirty=false;
   try{ renderInner(); }
   catch(e){
     console.error('render error:',e);
